@@ -1,7 +1,7 @@
 app_name = "abgc_reports"
 app_title = "Abgc Reports"
 app_publisher = "8848digital.llp"
-app_description = "ABGC\'s Customise Reports"
+app_description = "ABGC's Customise Reports"
 app_email = "hrishikesh@8848digital.com"
 app_license = "MIT"
 
