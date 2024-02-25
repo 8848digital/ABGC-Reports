@@ -6,7 +6,9 @@ from collections import OrderedDict
 
 import frappe
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
-    get_accounting_dimensions, get_dimension_with_children)
+	get_accounting_dimensions,
+	get_dimension_with_children,
+)
 from erpnext.accounts.utils import get_currency_precision
 from frappe import _, qb, query_builder, scrub
 from frappe.query_builder import Criterion
@@ -62,9 +64,7 @@ class ReceivablePayableReport(object):
 
 	def set_defaults(self):
 		if not self.filters.get("company"):
-			self.filters.company = frappe.db.get_single_value(
-				"Global Defaults", "default_company"
-			)
+			self.filters.company = frappe.db.get_single_value("Global Defaults", "default_company")
 		self.company_currency = frappe.get_cached_value(
 			"Company",
 			{"name": ["in", frappe.parse_json(self.filters.get("company"))]},
@@ -219,9 +219,7 @@ class ReceivablePayableReport(object):
 			if self.filters.get("ignore_accounts"):
 				row = self.voucher_balance.get((ple.voucher_type, ple.voucher_no, ple.party))
 			else:
-				row = self.voucher_balance.get(
-					(ple.account, ple.voucher_type, ple.voucher_no, ple.party)
-				)
+				row = self.voucher_balance.get((ple.account, ple.voucher_type, ple.voucher_no, ple.party))
 
 		row.party_type = ple.party_type
 		return row
@@ -285,9 +283,7 @@ class ReceivablePayableReport(object):
 		# set outstanding for all the accumulated balances
 		# as we can use this to filter out invoices without outstanding
 		for key, row in self.voucher_balance.items():
-			row.outstanding = flt(
-				row.invoiced - row.paid - row.credit_note, self.currency_precision
-			)
+			row.outstanding = flt(row.invoiced - row.paid - row.credit_note, self.currency_precision)
 			row.outstanding_in_account_currency = flt(
 				row.invoiced_in_account_currency
 				- row.paid_in_account_currency
@@ -638,22 +634,14 @@ class ReceivablePayableReport(object):
 		if self.filters.get("party"):
 			if self.account_type == "Payable":
 				query = query.select(
-					Sum(jea.debit_in_account_currency - jea.credit_in_account_currency).as_(
-						"future_amount"
-					)
+					Sum(jea.debit_in_account_currency - jea.credit_in_account_currency).as_("future_amount")
 				)
-				query = query.select(
-					Sum(jea.debit - jea.credit).as_("future_amount_in_base_currency")
-				)
+				query = query.select(Sum(jea.debit - jea.credit).as_("future_amount_in_base_currency"))
 			else:
 				query = query.select(
-					Sum(jea.credit_in_account_currency - jea.debit_in_account_currency).as_(
-						"future_amount"
-					)
+					Sum(jea.credit_in_account_currency - jea.debit_in_account_currency).as_("future_amount")
 				)
-				query = query.select(
-					Sum(jea.credit - jea.debit).as_("future_amount_in_base_currency")
-				)
+				query = query.select(Sum(jea.credit - jea.debit).as_("future_amount_in_base_currency"))
 		else:
 			query = query.select(
 				Sum(jea.debit if self.account_type == "Payable" else jea.credit).as_(
@@ -754,17 +742,9 @@ class ReceivablePayableReport(object):
 		index = None
 
 		if not (
-			self.filters.range1
-			and self.filters.range2
-			and self.filters.range3
-			and self.filters.range4
+			self.filters.range1 and self.filters.range2 and self.filters.range3 and self.filters.range4
 		):
-			(
-				self.filters.range1,
-				self.filters.range2,
-				self.filters.range3,
-				self.filters.range4,
-			) = (
+			(self.filters.range1, self.filters.range2, self.filters.range3, self.filters.range4,) = (
 				30,
 				60,
 				90,
@@ -841,9 +821,7 @@ class ReceivablePayableReport(object):
 
 	def get_sales_invoices_or_customers_based_on_sales_person(self):
 		if self.filters.get("sales_person"):
-			lft, rgt = frappe.db.get_value(
-				"Sales Person", self.filters.get("sales_person"), ["lft", "rgt"]
-			)
+			lft, rgt = frappe.db.get_value("Sales Person", self.filters.get("sales_person"), ["lft", "rgt"])
 
 			records = frappe.db.sql(
 				"""
@@ -879,14 +857,10 @@ class ReceivablePayableReport(object):
 		self.add_accounting_dimensions_filters()
 
 	def get_cost_center_conditions(self):
-		lft, rgt = frappe.db.get_value(
-			"Cost Center", self.filters.cost_center, ["lft", "rgt"]
-		)
+		lft, rgt = frappe.db.get_value("Cost Center", self.filters.cost_center, ["lft", "rgt"])
 		cost_center_list = [
 			center.name
-			for center in frappe.get_list(
-				"Cost Center", filters={"lft": (">=", lft), "rgt": ("<=", rgt)}
-			)
+			for center in frappe.get_list("Cost Center", filters={"lft": (">=", lft), "rgt": ("<=", rgt)})
 		]
 		self.qb_selection_filter.append(self.ple.cost_center.isin(cost_center_list))
 
@@ -920,7 +894,6 @@ class ReceivablePayableReport(object):
 
 			if accounts:
 				self.qb_selection_filter.append(self.ple.account.isin(accounts))
-
 
 	def add_customer_filters(
 		self,
@@ -1134,9 +1107,7 @@ class ReceivablePayableReport(object):
 		)
 
 		if self.filters.show_future_payments:
-			self.add_column(
-				label=_("Future Payment Ref"), fieldname="future_ref", fieldtype="Data"
-			)
+			self.add_column(label=_("Future Payment Ref"), fieldname="future_ref", fieldtype="Data")
 			self.add_column(label=_("Future Payment Amount"), fieldname="future_amount")
 			self.add_column(label=_("Remaining Balance"), fieldname="remaining_balance")
 
@@ -1145,9 +1116,7 @@ class ReceivablePayableReport(object):
 
 			# comma separated list of linked delivery notes
 			if self.filters.show_delivery_notes:
-				self.add_column(
-					label=_("Delivery Notes"), fieldname="delivery_notes", fieldtype="Data"
-				)
+				self.add_column(label=_("Delivery Notes"), fieldname="delivery_notes", fieldtype="Data")
 			self.add_column(
 				label=_("Territory"), fieldname="territory", fieldtype="Link", options="Territory"
 			)
@@ -1161,9 +1130,7 @@ class ReceivablePayableReport(object):
 				self.add_column(label=_("Sales Person"), fieldname="sales_person", fieldtype="Data")
 
 			if self.filters.sales_partner:
-				self.add_column(
-					label=_("Sales Partner"), fieldname="default_sales_partner", fieldtype="Data"
-				)
+				self.add_column(label=_("Sales Partner"), fieldname="default_sales_partner", fieldtype="Data")
 
 		if self.filters.account_type == "Payable":
 			self.add_column(
@@ -1176,9 +1143,7 @@ class ReceivablePayableReport(object):
 		if self.filters.show_remarks:
 			self.add_column(label=_("Remarks"), fieldname="remarks", fieldtype="Text", width=200)
 
-	def add_column(
-		self, label, fieldname=None, fieldtype="Currency", options=None, width=120
-	):
+	def add_column(self, label, fieldname=None, fieldtype="Currency", options=None, width=120):
 		if not fieldname:
 			fieldname = scrub(label)
 		if fieldtype == "Currency":
@@ -1187,9 +1152,7 @@ class ReceivablePayableReport(object):
 			width = 90
 
 		self.columns.append(
-			dict(
-				label=label, fieldname=fieldname, fieldtype=fieldtype, options=options, width=width
-			)
+			dict(label=label, fieldname=fieldname, fieldtype=fieldtype, options=options, width=width)
 		)
 
 	def setup_ageing_columns(self):
@@ -1258,9 +1221,7 @@ def get_customer_group_with_children(customer_groups):
 	for d in customer_groups:
 		if frappe.db.exists("Customer Group", d):
 			lft, rgt = frappe.db.get_value("Customer Group", d, ["lft", "rgt"])
-			children = frappe.get_all(
-				"Customer Group", filters={"lft": [">=", lft], "rgt": ["<=", rgt]}
-			)
+			children = frappe.get_all("Customer Group", filters={"lft": [">=", lft], "rgt": ["<=", rgt]})
 			all_customer_groups += [c.name for c in children]
 		else:
 			frappe.throw(_("Customer Group: {0} does not exist").format(d))
