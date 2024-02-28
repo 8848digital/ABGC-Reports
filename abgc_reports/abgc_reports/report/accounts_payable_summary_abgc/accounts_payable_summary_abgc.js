@@ -2,13 +2,14 @@
 // For license information, please see license.txt
 /* eslint-disable */
 
-frappe.query_reports["Accounts Payable ABGC"] = {
+frappe.query_reports["Accounts Payable Summary ABGC"] = {
 	filters: [
 		{
 			fieldname: "company",
 			label: __("Company"),
 			fieldtype: "MultiSelectList",
-			default: ["ABGC DMCC"],
+			options: "Company",
+			default: frappe.defaults.get_user_default("Company"),
 			get_data: function (txt) {
 				return frappe.db.get_link_options("Company", txt);
 			},
@@ -20,46 +21,10 @@ frappe.query_reports["Accounts Payable ABGC"] = {
 			default: frappe.datetime.get_today(),
 		},
 		{
-			fieldname: "finance_book",
-			label: __("Finance Book"),
-			fieldtype: "Link",
-			options: "Finance Book",
-		},
-		{
-			fieldname: "cost_center",
-			label: __("Cost Center"),
-			fieldtype: "Link",
-			options: "Cost Center",
-			get_query: () => {
-				var company = frappe.query_report.get_filter_value("company");
-				return {
-					filters: {
-						company: company,
-					},
-				};
-			},
-		},
-		{
-			fieldname: "party_account",
-			label: __("Payable Account"),
-			fieldtype: "Link",
-			options: "Account",
-			get_query: () => {
-				var company = frappe.query_report.get_filter_value("company");
-				return {
-					filters: {
-						company: company,
-						account_type: "Payable",
-						is_group: 0,
-					},
-				};
-			},
-		},
-		{
 			fieldname: "ageing_based_on",
 			label: __("Ageing Based On"),
 			fieldtype: "Select",
-			options: "Posting Date\nDue Date\nSupplier Invoice Date",
+			options: "Posting Date\nDue Date",
 			default: "Due Date",
 		},
 		{
@@ -91,10 +56,24 @@ frappe.query_reports["Accounts Payable ABGC"] = {
 			reqd: 1,
 		},
 		{
-			fieldname: "payment_terms_template",
-			label: __("Payment Terms Template"),
+			fieldname: "finance_book",
+			label: __("Finance Book"),
 			fieldtype: "Link",
-			options: "Payment Terms Template",
+			options: "Finance Book",
+		},
+		{
+			fieldname: "cost_center",
+			label: __("Cost Center"),
+			fieldtype: "Link",
+			options: "Cost Center",
+			get_query: () => {
+				var company = frappe.query_report.get_filter_value("company");
+				return {
+					filters: {
+						company: company,
+					},
+				};
+			},
 		},
 		{
 			fieldname: "party_type",
@@ -123,16 +102,16 @@ frappe.query_reports["Accounts Payable ABGC"] = {
 			},
 		},
 		{
+			fieldname: "payment_terms_template",
+			label: __("Payment Terms Template"),
+			fieldtype: "Link",
+			options: "Payment Terms Template",
+		},
+		{
 			fieldname: "supplier_group",
 			label: __("Supplier Group"),
 			fieldtype: "Link",
 			options: "Supplier Group",
-			hidden: 1,
-		},
-		{
-			fieldname: "group_by_party",
-			label: __("Group By Supplier"),
-			fieldtype: "Check",
 		},
 		{
 			fieldname: "based_on_payment_terms",
@@ -140,51 +119,23 @@ frappe.query_reports["Accounts Payable ABGC"] = {
 			fieldtype: "Check",
 		},
 		{
-			fieldname: "show_remarks",
-			label: __("Show Remarks"),
-			fieldtype: "Check",
-		},
-		{
-			fieldname: "show_future_payments",
-			label: __("Show Future Payments"),
-			fieldtype: "Check",
-		},
-		{
 			fieldname: "for_revaluation_journals",
 			label: __("Revaluation Journals"),
 			fieldtype: "Check",
 		},
-		{
-			fieldname: "in_party_currency",
-			label: __("In Party Currency"),
-			fieldtype: "Check",
-		},
-		{
-			fieldname: "ignore_accounts",
-			label: __("Group by Voucher"),
-			fieldtype: "Check",
-		},
 	],
 
-	formatter: function (value, row, column, data, default_formatter) {
-		value = default_formatter(value, row, column, data);
-		if (data && data.bold) {
-			value = value.bold();
-		}
-		return value;
-	},
-
 	onload: function (report) {
-		report.page.add_inner_button(__("Accounts Payable Summary ABGC"), function () {
+		report.page.add_inner_button(__("Accounts Payable ABGC"), function () {
 			var filters = report.get_values();
-			frappe.set_route("query-report", "Accounts Payable Summary ABGC", {
+			frappe.set_route("query-report", "Accounts Payable ABGC", {
 				company: filters.company,
 			});
 		});
 	},
 };
 
-erpnext.utils.add_dimensions("Accounts Payable ABGC", 9);
+erpnext.utils.add_dimensions("Accounts Payable Summary ABGC", 9);
 
 function get_party_type_options() {
 	let options = [];

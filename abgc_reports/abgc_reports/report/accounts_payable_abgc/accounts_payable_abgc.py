@@ -32,11 +32,15 @@ from frappe.utils import cint, cstr, flt, getdate, nowdate
 
 
 def execute(filters=None):
-	args = {
-		"account_type": "Payable",
-		"naming_by": ["Buying Settings", "supp_master_name"],
-	}
-	return ReceivablePayableReport(filters).run(args)
+	try:
+		args = {
+			"account_type": "Payable",
+			"naming_by": ["Buying Settings", "supp_master_name"],
+		}
+
+		return ReceivablePayableReport(filters).run(args)
+	except Exception:
+		return
 
 
 class ReceivablePayableReport(object):
