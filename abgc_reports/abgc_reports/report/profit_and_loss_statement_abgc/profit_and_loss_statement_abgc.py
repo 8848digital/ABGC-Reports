@@ -73,6 +73,15 @@ def execute(filters=None):
 		ignore_closing_entries=True,
 		ignore_accumulated_values_for_fy=True,
 	)
+	# to rename the heads of Income and Expense as Trading and Non-Trading
+	if income:
+		income[0]['account_name'] = "104-2-Non-Trading Income"
+	if expense:
+		expense[0]['account_name'] = "105-2-Non-Trading Expense"
+	if t_income:
+		t_income[0]['account_name'] = "104-1-Trading Income"
+	if t_expense:
+		t_expense[0]['account_name'] = "105-1-Trading Expense"
 
 	net_profit_loss_t = get_net_profit_loss(
 		t_income, t_expense, period_list, "Trading",filters.company, filters.presentation_currency
@@ -98,7 +107,7 @@ def execute(filters=None):
 
 	data.extend(income or [])
 	if not income and net_profit_loss_t:
-		data.append({"account_name":_("Income")})
+		data.append({"account_name":_("104-2-Non-Trading Income")})
 		data.append(net_profit_loss_t)
 		add_income_row = net_profit_loss_t.copy()
 		add_income_row["account_name"] = _("Total Income-[Non-Trading](Credit)")
