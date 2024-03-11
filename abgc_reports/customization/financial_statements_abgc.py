@@ -96,6 +96,7 @@ def get_period_list(
 		opts.update(
 			{
 				"key": key.replace(" ", "_").replace("-", "_"),
+				"budget_key": key.replace(" ", "_").replace("-", "_") + "_budget",
 				"label": label,
 				"year_start_date": year_start_date,
 				"year_end_date": year_end_date,
@@ -202,6 +203,9 @@ def get_data(
 		accumulated_values,
 		ignore_accumulated_values_for_fy,
 	)
+	
+	get_budget_values(accounts, period_list)
+
 	accumulate_values_into_parents(accounts, accounts_by_name, period_list)
 	out = prepare_data(accounts, balance_must_be, period_list, company_currency)
 	out = filter_out_zero_value_rows(out, parent_children_map)
@@ -210,6 +214,50 @@ def get_data(
 		add_total_row(out, root_type, custom_sub_report_type,balance_must_be, period_list, company_currency)
 
 	return out
+
+def get_budget_values(accounts, period_list):
+	for account in accounts:
+		if account.is_group:
+			# Budget not assigned for group accounts 
+			continue
+		for period in period_list:
+			budget_details = frappe.db.sql(f"""
+				With MOTNH_LIST AS(
+				SELECT DISTINCT DATE_FORMAT(date_column, '%M') AS Month_Name
+				FROM (
+					SELECT
+						ADDDATE('{period.from_date}', INTERVAL t4*10000 + t3*1000 + t2*100 + t1*10 + t0 DAY) AS date_column
+					FROM
+						(SELECT 0 t0 UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t0,
+						(SELECT 0 t1 UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t1,
+						(SELECT 0 t2 UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t2,
+						(SELECT 0 t3 UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) t3,
+						(SELECT 0 t4 UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4) t4
+					WHERE
+						ADDDATE('{period.from_date}', INTERVAL t4*10000 + t3*1000 + t2*100 + t1*10 + t0 DAY) BETWEEN '{period.from_date}' AND '{period.to_date}'
+				) as dates
+				)
+
+				Select bdg_acc.account, bdg_acc.budget_amount * sum(mdp.percentage_allocation) / 100 as budget_amount
+				from 
+				`tabBudget` bdg
+				left outer join `tabBudget Account` bdg_acc
+					on bdg.name = bdg_acc.parent
+				left outer join `tabMonthly Distribution Percentage` mdp
+					on bdg.monthly_distribution = mdp.parent
+				left outer join `tabFiscal Year` fy
+					on fy.name = bdg.fiscal_year
+
+				where 
+					mdp.month in (select Month_Name from MOTNH_LIST) and
+					bdg_acc.account = "{account.name}" and
+					"{period.from_date}" <= fy.year_end_date and
+					"{period.to_date}" >= fy.year_start_date
+				group by bdg_acc.account
+				""", as_dict=True)
+			if budget_details:
+				account[period.budget_key] = flt(budget_details[0]["budget_amount"])
+			
 
 
 def get_appropriate_currency(company, filters=None):
@@ -257,6 +305,10 @@ def accumulate_values_into_parents(accounts, accounts_by_name, period_list):
 					period.key, 0.0
 				) + d.get(period.key, 0.0)
 
+				accounts_by_name[d.parent_account][period.budget_key] = accounts_by_name[d.parent_account].get(
+					period.budget_key, 0.0
+				) + d.get(period.budget_key, 0.0)
+
 			accounts_by_name[d.parent_account]["opening_balance"] = accounts_by_name[d.parent_account].get(
 				"opening_balance", 0.0
 			) + d.get("opening_balance", 0.0)
@@ -297,6 +349,7 @@ def prepare_data(accounts, balance_must_be, period_list, company_currency):
 				d[period.key] *= -1
 
 			row[period.key] = flt(d.get(period.key, 0.0), 3)
+			row[period.budget_key] = flt(d.get(period.budget_key, 0.0), 3)
 
 			if abs(row[period.key]) >= 0.005:
 				# ignore zero values
@@ -644,15 +697,23 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None):
 			}
 		)
 	for period in period_list:
-		columns.append(
+		columns.extend([
 			{
 				"fieldname": period.key,
 				"label": period.label,
 				"fieldtype": "Currency",
 				"options": "currency",
 				"width": 150,
+			},
+			{
+				"fieldname": period.budget_key,
+				"label": period.label+" Budget",
+				"fieldtype": "Currency",
+				"options": "currency",
+				"width": 150,
+				"not_include_in_chart": 1
 			}
-		)
+		])
 	if periodicity != "Yearly":
 		if not accumulated_values:
 			columns.append(

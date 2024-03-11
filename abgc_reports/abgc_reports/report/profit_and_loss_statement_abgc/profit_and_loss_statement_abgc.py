@@ -220,7 +220,7 @@ def get_net_profit_loss(income, expense, period_list, custom_sub_report_type, co
 
 
 def get_chart_data(filters, columns, income,t_income, t_expense, expense, net_profit_loss, net_profit_loss_t):
-	labels = [d.get("label") for d in columns[2:]]
+	labels = [d.get("label") for d in columns[2:] if not d.get("not_include_in_chart")]
 
 	t_income_data, t_expense_data, income_data, expense_data, net_profit, t_net_profit = [], [], [], [], [], []
 
@@ -263,5 +263,4 @@ def get_chart_data(filters, columns, income,t_income, t_expense, expense, net_pr
 		chart["type"] = "line"
 
 	chart["fieldtype"] = "Currency"
-
 	return chart
