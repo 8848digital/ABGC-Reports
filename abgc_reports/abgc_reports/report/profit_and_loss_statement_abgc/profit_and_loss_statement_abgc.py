@@ -5,6 +5,7 @@
 import frappe
 from frappe import _
 from frappe.utils import flt
+from collections import Counter
 
 from abgc_reports.customization.financial_statements_abgc import (
 	get_columns,
@@ -72,6 +73,15 @@ def execute(filters=None):
 		ignore_closing_entries=True,
 		ignore_accumulated_values_for_fy=True,
 	)
+	# to rename the heads of Income and Expense as Trading and Non-Trading
+	if income:
+		income[0]['account_name'] = "104-2-Non-Trading Income"
+	if expense:
+		expense[0]['account_name'] = "105-2-Non-Trading Expense"
+	if t_income:
+		t_income[0]['account_name'] = "104-1-Trading Income"
+	if t_expense:
+		t_expense[0]['account_name'] = "105-1-Trading Expense"
 
 	net_profit_loss_t = get_net_profit_loss(
 		t_income, t_expense, period_list, "Trading",filters.company, filters.presentation_currency
@@ -88,13 +98,39 @@ def execute(filters=None):
 		data.append(net_profit_loss_t)
 		data.append({})
 		data.append({})
+	if income and net_profit_loss_t:
+		income.insert(len(income)-2,net_profit_loss_t)
+		net_profit_loss = get_net_profit_loss(
+		income, expense, period_list, "Non-Trading",filters.company, filters.presentation_currency
+	)
+
 
 	data.extend(income or [])
+	if not income and net_profit_loss_t:
+		data.append({"account_name":_("104-2-Non-Trading Income")})
+		data.append(net_profit_loss_t)
+		add_income_row = net_profit_loss_t.copy()
+		add_income_row["account_name"] = _("Total Income-[Non-Trading](Credit)")
+		data.append(add_income_row)
+		data.append({})		
+
+	if income:
+		if net_profit_loss_t:
+			update_total(-2,data,net_profit_loss_t)
+
 	data.extend(expense or [])
 	if net_profit_loss:
 		data.append(net_profit_loss)
+	elif not net_profit_loss and net_profit_loss_t:
+		profit_total = net_profit_loss_t.copy()
+		profit_total["account_name"] = "'" + _("Profit for the Year") + "'"
+		data.append(profit_total)
 
-	
+
+
+	if net_profit_loss and net_profit_loss_t:
+		update_total(-1,data,net_profit_loss_t)
+
 
 	columns = get_columns(
 		filters.periodicity, period_list, filters.accumulated_values, filters.company
@@ -111,6 +147,16 @@ def execute(filters=None):
 
 	return columns, data, None, chart, report_summary
 
+def update_total(index,data,net_profit_loss_t):
+	if net_profit_loss_t:
+		x= data[index]
+		y = net_profit_loss_t
+		key_list = list(x.keys())
+		exclude_keys = ['account_name', 'account', 'warn_if_negative', 'currency','opening_balance']
+		for k in key_list:
+			if k not in exclude_keys:
+				data[index][k] += net_profit_loss_t[k]
+
 
 def get_report_summary(
 	period_list, periodicity, income, expense,t_income, t_expense, net_profit_loss, net_profit_loss_t, currency, filters, consolidated=False
@@ -124,15 +170,17 @@ def get_report_summary(
 
 	for period in period_list:
 		key = period if consolidated else period.key
-		if t_income and t_income[-2].get('custom_sub_report_type') == "Trading":
+		if t_income:
 			t_net_income += t_income[-2].get(key)
-		if t_expense and t_expense[-2].get('custom_sub_report_type') == "Trading":
+		if t_expense:
 			t_net_expense += t_expense[-2].get(key)
 		if net_profit_loss_t :
 			t_net_profit += net_profit_loss_t.get(key)
-		if income and income[-2].get('custom_sub_report_type') != "Trading":
+		if income:
 			net_income += income[-2].get(key)
-		if expense and expense[-2].get('custom_sub_report_type') != "Trading":
+		if not income and net_profit_loss_t:
+			net_income += net_profit_loss_t.get(key)
+		if expense:
 			net_expense += expense[-2].get(key)
 		if net_profit_loss:
 			net_profit += net_profit_loss.get(key)
@@ -162,13 +210,13 @@ def get_report_summary(
 		{"type": "separator", "value": "=", "color": "blue"},
 		{
 			"value": t_net_profit,
-			"indicator": "Green" if net_profit > 0 else "Red",
+			"indicator": "Green" if t_net_profit > 0 else "Red",
 			"label": t_profit_label,
 			"datatype": "Currency",
 			"currency": currency,
 		},
 
-		{"value": net_income, "label": income_label, "datatype": "Currency", "currency": currency},
+		{"value": net_income , "label": income_label, "datatype": "Currency", "currency": currency},
 		{"type": "separator", "value": "-"},
 		{"value": net_expense, "label": expense_label, "datatype": "Currency", "currency": currency},
 		{"type": "separator", "value": "=", "color": "blue"},

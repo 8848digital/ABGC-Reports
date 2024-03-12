@@ -230,5 +230,6 @@ function get_party_type_options() {
 				options.push(party_type.name);
 			});
 		});
+
 	return options;
 }

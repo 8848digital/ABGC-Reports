@@ -1,0 +1,13 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Client Script",
+  "dt": "Asset Repair",
+  "enabled": 1,
+  "modified": "2024-03-08 08:05:31.004438",
+  "module": null,
+  "name": "Asset Repair",
+  "script": "frappe.ui.form.on('Asset Repair', {\n\trefresh(frm) {\n\t\t// your code here\n// \t\tvar l = []\n// \t    frm.doc.custom_repair_cost_table.map((i)=>{\n// \t        l.push(i.repair_costs)\n// \t    })\n// \t    let sum = l.reduce(function (x, y) {\n//         return x + y;\n//         }, 0);\n// \t    frm.set_value('total_repair_cost', sum)\n\t},\n\t\n\tbefore_save(frm) {\n\t    var l = []\n\t    frm.doc.custom_repair_cost_table.map((i)=>{\n\t        l.push(i.repair_costs)\n\t    })\n\t    let sum = l.reduce(function (x, y) {\n        return x + y;\n        }, 0);\n        console.log('lll',l)\n\t    frm.set_value('repair_cost', sum)\n\t}\n})",
+  "view": "Form"
+ }
+]

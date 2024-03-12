@@ -8,6 +8,35 @@ app_license = "MIT"
 # Includes in <head>
 # ------------------
 
+fixtures = [
+	{
+		"doctype": "Custom Field",
+		"filters": [
+			[
+				"dt",
+				"in",
+				(
+					# Core Doctypes
+					"Asset Repair"
+				),
+			]
+		],
+	},
+	{
+		"doctype": "Client Script",
+		"filters": [
+			[
+				"dt",
+				"in",
+				(
+					# Core Doctypes
+					"Asset Repair"
+				),
+			]
+		],
+	},
+]
+
 # include js, css files in header of desk.html
 # app_include_css = "/assets/abgc_reports/css/abgc_reports.css"
 # app_include_js = "/assets/abgc_reports/js/abgc_reports.js"
@@ -108,21 +137,26 @@ app_license = "MIT"
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Asset Repair": "abgc_reports.abgc_reports.override_asset_repair.OverrideAssetRepair"
+	# 	"ToDo": "custom_app.overrides.CustomToDo"
+}
 
 # Document Events
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	# 	"*": {
+	# 		"on_update": "method",
+	# 		"on_cancel": "method",
+	# 		"on_trash": "method"
+	# 	}
+	"Asset Repair": {
+		# "validate": "abgc_reports.abgc_reports.custom.fetch_total_repair_cost",
+		"before_submit": "abgc_reports.abgc_reports.custom.create_gl_entry"
+	}
+}
 
 # Scheduled Tasks
 # ---------------
