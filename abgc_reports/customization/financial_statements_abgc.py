@@ -249,6 +249,7 @@ def get_budget_values(accounts, period_list):
 					on fy.name = bdg.fiscal_year
 
 				where 
+					bdg.docstatus = 1 and
 					mdp.month in (select Month_Name from MOTNH_LIST) and
 					bdg_acc.account = "{account.name}" and
 					"{period.from_date}" <= fy.year_end_date and
