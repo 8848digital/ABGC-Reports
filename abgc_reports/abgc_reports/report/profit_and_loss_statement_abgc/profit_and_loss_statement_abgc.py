@@ -121,9 +121,16 @@ def execute(filters=None):
 	data.extend(expense or [])
 	if net_profit_loss:
 		data.append(net_profit_loss)
+	elif not net_profit_loss and net_profit_loss_t:
+		profit_total = net_profit_loss_t.copy()
+		profit_total["account_name"] = "'" + _("Profit for the Year") + "'"
+		data.append(profit_total)
 
-	if net_profit_loss_t:
+
+
+	if net_profit_loss and net_profit_loss_t:
 		update_total(-1,data,net_profit_loss_t)
+
 
 	columns = get_columns(
 		filters.periodicity, period_list, filters.accumulated_values, filters.company
