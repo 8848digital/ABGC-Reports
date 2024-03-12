@@ -116,13 +116,17 @@ app_license = "MIT"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	# 	"*": {
+	# 		"on_update": "method",
+	# 		"on_cancel": "method",
+	# 		"on_trash": "method"
+	# 	}
+	"Asset Repair": {
+		# "validate": "abgc_reports.abgc_reports.custom.fetch_total_repair_cost",
+		# "before_submit": "abgc_reports.abgc_reports.custom.create_gl_entry"
+	}
+}
 
 # Scheduled Tasks
 # ---------------
