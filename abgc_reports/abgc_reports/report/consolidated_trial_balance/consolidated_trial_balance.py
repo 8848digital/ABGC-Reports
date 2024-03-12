@@ -8,6 +8,7 @@ from frappe.query_builder.functions import Sum
 from frappe.utils import add_days, cstr, flt, formatdate, getdate
 from collections import defaultdict
 from erpnext.accounts.report.utils import convert
+from frappe.query_builder import Criterion
 
 
 import erpnext
@@ -45,10 +46,9 @@ def execute(filters=None):
 	return columns, data
 
 def get_companies(filters):
-	if filters.consolidated:
-		companies= frappe.db.get_list("Company",{"parent_company":filters.company},pluck='name')
-		companies.insert(0, filters.company)
-		return companies
+	companies= frappe.db.get_list("Company",{"parent_company":filters.company},pluck='name')
+	companies.insert(0, filters.company)
+	return companies
 
 def validate_filters(filters):
 	if not filters.fiscal_year:
@@ -92,64 +92,72 @@ def validate_filters(filters):
 		)
 		filters.to_date = filters.year_end_date
 
-	if filters.company:
-		is_group = frappe.db.get_value("Company",filters.company,"is_group")
-		if not is_group and filters.consolidated:
-			frappe.throw("Cannot consolidate the report for child company.")
+	# if filters.company:
+	# 	is_group = frappe.db.get_value("Company",filters.company,"is_group")
+	# 	if not is_group and filters.consolidated:
+	# 		frappe.throw("Cannot consolidate the report for child company.")
 
 def get_data(filters, companies):
-	if filters.consolidated:
-		total_row = {
-				"account": "'" + _("Total") + "'",
-				"account_name": "'" + _("Total") + "'",
-				"warn_if_negative": True,
-			}
-		for key in v:
-			total_row.update({key:0.0})
 
-		fiscal_year = get_fiscal_year_data(filters.get("from_fiscal_year"), filters.get("to_fiscal_year"))
-		accounts, accounts_by_name, parent_children_map = get_account_heads(companies, filters)
+	fiscal_year = get_fiscal_year_data(filters.get("from_fiscal_year"), filters.get("to_fiscal_year"))
+	accounts, accounts_by_name, parent_children_map = get_account_heads(companies, filters)
 
-		if not accounts:
-			return None
-		
-		company_currency = get_company_currency(filters)
-		if filters.filter_based_on == "Fiscal Year":
-			start_date = fiscal_year.year_start_date if filters.report != "Balance Sheet" else None
-			end_date = fiscal_year.year_end_date
-		else:
-			start_date = filters.period_start_date if filters.report != "Balance Sheet" else None
-			end_date = filters.period_end_date
-
-		opening_balances = get_companywise_opening_balances(filters, companies)
-
-		gl_entries_by_account = {}
-
-		set_gl_entries_by_account(
-			start_date,
-			end_date,
-			filters,
-			gl_entries_by_account,
-			accounts_by_name,
-			accounts,
-		)
-
-		calculate_value(accounts, companies,gl_entries_by_account,accounts_by_name,opening_balances,filters.get("show_net_values"))
-
-		cfs_accumulate_values_into_parents(accounts, accounts_by_name, companies)
-		
-		data = prepare_data(accounts, filters, company_currency, companies)
-		
-		data = filter_out_zero_value_rows(
-			data, parent_children_map, show_zero_values=filters.get("show_zero_values")
-		)
-
-		calculate_total(data, total_row, companies)
-		data.extend([{}, total_row])
-
-		return data
-	else:
+	if not accounts:
 		return None
+	
+	company_currency = get_company_currency(filters)
+
+	if filters.filter_based_on == "Fiscal Year":
+		start_date = fiscal_year.year_start_date if filters.report != "Balance Sheet" else None
+		end_date = fiscal_year.year_end_date
+	else:
+		start_date = filters.period_start_date if filters.report != "Balance Sheet" else None
+		end_date = filters.period_end_date
+
+	opening_balances = get_companywise_opening_balances(filters, companies)
+
+	ignore_closing_balances = frappe.db.get_single_value(
+			"Accounts Settings", "ignore_account_closing_balance"
+		)
+
+	if filters.project:
+		filters.project = [filters.project]
+
+	gl_entries_by_account = {}
+
+	set_gl_entries_by_account(
+		start_date,
+		end_date,
+		filters,
+		gl_entries_by_account,
+		accounts_by_name,
+		accounts,
+		ignore_closing_entries = ignore_closing_balances
+	)
+
+	calculate_value(accounts, companies,gl_entries_by_account,accounts_by_name,opening_balances,filters.get("show_net_values"))
+
+	cfs_accumulate_values_into_parents(accounts, accounts_by_name, companies)
+	
+	data = prepare_data(accounts, filters, company_currency, companies)
+	
+	data = filter_out_zero_value_rows(
+		data, parent_children_map, show_zero_values=filters.get("show_zero_values")
+	)
+
+	total_row = {
+			"account": "'" + _("Total") + "'",
+			"account_name": "'" + _("Total") + "'",
+			"warn_if_negative": True,
+			"currency": company_currency,
+		}
+	for key in v:
+		total_row.update({key:0.0})
+
+	calculate_total(data, total_row, companies)
+	data.extend([{}, total_row])
+
+	return data
 
 def cfs_accumulate_values_into_parents(accounts, accounts_by_name, companies):
 	"""accumulate children's values in parent accounts"""
@@ -199,7 +207,7 @@ def prepare_data(accounts, filters, company_currency, companies):
 	for d in accounts:
 		# Prepare opening closing for group account
 		# if parent_children_map.get(d.account) and filters.get("show_net_values"):
-		# 	prepare_opening_closing(d)
+		# 	prepare_opening_closing(d, companies)
 
 		has_value = False
 		row = {
@@ -263,7 +271,7 @@ def set_gl_entries_by_account(
 		},
 		as_dict=1,
 	)
-	# print(f"\n\n\ncmp====>{filters.get('company'),}\n\nn")
+
 	currency_info = frappe._dict(
 		{"report_date": to_date, "presentation_currency": filters.get("presentation_currency")}
 	)
@@ -307,15 +315,16 @@ def set_gl_entries_by_account(
 
 		# if root_type:
 		# 	query = query.where(account.root_type == root_type)
-		# additional_conditions = get_additional_conditions(from_date, ignore_closing_entries, filters, d)
-		# if additional_conditions:
-		# 	query = query.where(Criterion.all(additional_conditions))
+
+		additional_conditions = get_additional_conditions(from_date, ignore_closing_entries, filters, d)
+		if additional_conditions:
+			query = query.where(Criterion.all(additional_conditions))
 		gl_entries = query.run(as_dict=True)
 
-		# if filters and filters.get("presentation_currency") != d.default_currency:
-		# 	currency_info["company"] = d.name
-		# 	currency_info["company_currency"] = d.default_currency
-		# 	convert_to_presentation_currency(gl_entries, currency_info)
+		if filters and filters.get("presentation_currency") != d.default_currency:
+			currency_info["company"] = d.name
+			currency_info["company_currency"] = d.default_currency
+			convert_to_presentation_currency(gl_entries, currency_info)
 
 		for entry in gl_entries:
 			if entry.account_number:
@@ -625,79 +634,35 @@ def get_columns(filters,companies=None):
 			"options": "Currency",
 			"hidden": 1,
 		}]
-	if filters.consolidated:
-		for company in companies:
-			apply_currency_formatter = 1 if not filters.presentation_currency else 0
-			currency = filters.presentation_currency
-			if not currency:
-				currency = erpnext.get_company_currency(company)
 
-			column.append(
-				{
-					"fieldname": f"{company}-closing_debit",
-					"label":  _(f"{company} Closing (Dr)"),
-					"fieldtype": "Currency",
-					"options": "currency",
-					"width": 150,
-					"apply_currency_formatter": apply_currency_formatter,
-					"company_name": company,
-				}
-			)
-			column.append(
-				{
-					"fieldname": f"{company}-closing_credit",
-					"label": _(f"{company} Closing (Cr)"),
-					"fieldtype": "Currency",
-					"options": "currency",
-					"width": 150,
-					"apply_currency_formatter": apply_currency_formatter,
-					"company_name": company,
-				}
-			)
-	else:
-		column += [
-		{
-			"fieldname": "opening_debit",
-			"label": _("Opening (Dr)"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 120,
-		},
-		{
-			"fieldname": "opening_credit",
-			"label": _("Opening (Cr)"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 120,
-		},
-		{
-			"fieldname": "debit",
-			"label": _("Debit"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 120,
-		},
-		{
-			"fieldname": "credit",
-			"label": _("Credit"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 120,
-		},
-		{
-			"fieldname": "closing_debit",
-			"label": _("Closing (Dr)"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 120,
-		},
-		{
-			"fieldname": "closing_credit",
-			"label": _("Closing (Cr)"),
-			"fieldtype": "Currency",
-			"options": "currency",
-			"width": 120,
-		}]
+	for company in companies:
+		apply_currency_formatter = 1 if not filters.presentation_currency else 0
+		currency = filters.presentation_currency
+		if not currency:
+			currency = erpnext.get_company_currency(company)
+
+		column.append(
+			{
+				"fieldname": f"{company}-closing_debit",
+				"label":  _(f"{company} Closing (Dr)"),
+				"fieldtype": "Currency",
+				"options": "currency",
+				"width": 150,
+				"apply_currency_formatter": apply_currency_formatter,
+				"company_name": company,
+			}
+		)
+		column.append(
+			{
+				"fieldname": f"{company}-closing_credit",
+				"label": _(f"{company} Closing (Cr)"),
+				"fieldtype": "Currency",
+				"options": "currency",
+				"width": 150,
+				"apply_currency_formatter": apply_currency_formatter,
+				"company_name": company,
+			}
+		)
 
 	return column
 
