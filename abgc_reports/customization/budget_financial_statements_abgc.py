@@ -1,17 +1,25 @@
-import functools
 import math
-import re
-
 import frappe
 from frappe import _
 from frappe.utils import add_days, add_months, cint, cstr, flt, formatdate, get_first_day, getdate
 
-from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
-	get_accounting_dimensions,
-	get_dimension_with_children,
-)
-from erpnext.accounts.report.utils import convert_to_presentation_currency, get_currency
+
 from erpnext.accounts.utils import get_fiscal_year
+from abgc_reports.customization.financial_statements_abgc import (
+    get_fiscal_year_data,
+	validate_fiscal_year,
+	validate_dates,
+	get_months,
+	get_label,
+	get_accounts,
+	filter_accounts,
+	get_appropriate_currency,
+	set_gl_entries_by_account,
+	calculate_values,
+	filter_out_zero_value_rows,
+	add_total_row,
+	
+	)
 
 def get_period_list(
 	from_fiscal_year,
@@ -175,6 +183,7 @@ def accumulate_values_into_parents(accounts, accounts_by_name, period_list):
 				"opening_balance", 0.0
 			) + d.get("opening_balance", 0.0)
 
+def prepare_data(accounts, balance_must_be, period_list, company_currency):
 	data = []
 	year_start_date = period_list[0]["year_start_date"].strftime("%Y-%m-%d")
 	year_end_date = period_list[-1]["year_end_date"].strftime("%Y-%m-%d")
