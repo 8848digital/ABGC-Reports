@@ -99,7 +99,8 @@ def get_period_list(
 			{
 				"key": key.replace(" ", "_").replace("-", "_"),
 				"budget_key": key.replace(" ", "_").replace("-", "_") + "_budget",
-				"label": label,
+				"label": label+" Actual",
+				"budget_label": label+" Budget",
 				"year_start_date": year_start_date,
 				"year_end_date": year_end_date,
 			}
@@ -313,7 +314,7 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None):
 			},
 			{
 				"fieldname": period.budget_key,
-				"label": period.label+" Budget",
+				"label": period.budget_label,
 				"fieldtype": "Currency",
 				"options": "currency",
 				"width": 150,
