@@ -1,0 +1,39 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-03-07 11:20:31.882421",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "repair_costs",
+  "purchase_invoice"
+ ],
+ "fields": [
+  {
+   "fieldname": "repair_costs",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Repair Costs"
+  },
+  {
+   "fieldname": "purchase_invoice",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Purchase Invoice",
+   "options": "Purchase Invoice"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-03-07 11:21:23.582219",
+ "modified_by": "Administrator",
+ "module": "Abgc Reports",
+ "name": "Repair Cost Table",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
