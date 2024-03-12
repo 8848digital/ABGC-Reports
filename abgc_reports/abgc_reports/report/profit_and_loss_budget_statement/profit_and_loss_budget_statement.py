@@ -6,12 +6,14 @@ import frappe
 from frappe import _
 from frappe.utils import flt
 
-from abgc_reports.customization.financial_statements_abgc import (
+from abgc_reports.customization.financial_statements_abgc import get_filtered_list_for_consolidated_report
+
+from abgc_reports.customization.budget_financial_statements_abgc import (
 	get_columns,
 	get_data,
-	get_filtered_list_for_consolidated_report,
 	get_period_list,
 )
+
 
 
 def execute(filters=None):
@@ -220,7 +222,7 @@ def get_net_profit_loss(income, expense, period_list, custom_sub_report_type, co
 
 
 def get_chart_data(filters, columns, income,t_income, t_expense, expense, net_profit_loss, net_profit_loss_t):
-	labels = [d.get("label") for d in columns[2:]]
+	labels = [d.get("label") for d in columns[2:] if not d.get("not_include_in_chart")]
 
 	t_income_data, t_expense_data, income_data, expense_data, net_profit, t_net_profit = [], [], [], [], [], []
 
