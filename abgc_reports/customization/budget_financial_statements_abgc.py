@@ -18,7 +18,6 @@ from abgc_reports.customization.financial_statements_abgc import (
 	calculate_values,
 	filter_out_zero_value_rows,
 	add_total_row,
-	
 	)
 
 def get_period_list(
