@@ -1,0 +1,18 @@
+[
+ {
+  "default_value": null,
+  "doc_type": "Budget",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
+  "field_name": "monthly_distribution",
+  "is_system_generated": 0,
+  "modified": "2024-03-13 11:50:43.474255",
+  "module": "Abgc Reports",
+  "name": "Budget-monthly_distribution-reqd",
+  "property": "reqd",
+  "property_type": "Check",
+  "row_name": null,
+  "value": "1"
+ }
+]
