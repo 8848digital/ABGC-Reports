@@ -12,12 +12,12 @@ frappe.require("assets/erpnext/js/financial_statements.js", function () {
 				default: frappe.defaults.get_user_default("Company"),
 				reqd: 1,
 			},
-			// {
-			// 	fieldname: "consolidated",
-			// 	label: __("Consolidated"),
-			// 	fieldtype: "Check",
-			// 	default: 1,
-			// },
+			{
+				fieldname: "consolidated",
+				label: __("Consolidated"),
+				fieldtype: "Check",
+				default: 1,
+			},
 			{
 				fieldname: "fiscal_year",
 				label: __("Fiscal Year"),
