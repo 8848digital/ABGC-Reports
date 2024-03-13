@@ -35,6 +35,10 @@ fixtures = [
 			]
 		],
 	},
+    {
+		"doctype": "Property Setter",
+		"filters": {"module": ["in", "Abgc Reports"]}
+	},
 ]
 
 # include js, css files in header of desk.html
