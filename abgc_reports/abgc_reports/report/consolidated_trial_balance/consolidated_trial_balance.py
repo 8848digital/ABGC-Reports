@@ -247,7 +247,7 @@ def process_raw_data(data, final_consolidated_data, company, total_row):
 def check_account(account_name, final_consolidated_data):
 	i = 0
 	for entry in final_consolidated_data:
-		if entry.get("account")[0:-5] == account_name:
+		if entry.get("account_name") == account_name:
 			return i
 		i += 1
 
