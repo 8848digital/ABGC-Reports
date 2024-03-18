@@ -195,12 +195,19 @@ def get_report_summary(
 		expense_label = _("Total Expense This Year")
 		
 	else:
-		t_profit_label = _("Gross Net Profit")
-		t_income_label = _("Trading Total Income")
-		t_expense_label = _("Trading Total Expense")
-		profit_label = _("Net Profit")
-		income_label = _("Total Income")
-		expense_label = _("Total Expense")
+		if periodicity == "Half-Yearly":
+			period = " The Half-Year"
+		elif periodicity == "Quarterly":
+			period = " The Quarter"
+		elif periodicity == "Monthly":
+			period = " The HMonth"
+
+		t_profit_label = _("Gross Net Profit" + period)
+		t_income_label = _("Trading Total Income" + period)
+		t_expense_label = _("Trading Total Expense" + period)
+		profit_label = _("Net Profit" + period)
+		income_label = _("Total Income" + period)
+		expense_label = _("Total Expense" + period)
 		
 
 	return [
@@ -221,8 +228,8 @@ def get_report_summary(
 		{"value": net_expense, "label": expense_label, "datatype": "Currency", "currency": currency},
 		{"type": "separator", "value": "=", "color": "blue"},
 		{
-			"value": net_profit,
-			"indicator": "Green" if net_profit > 0 else "Red",
+			"value": net_income - net_expense,
+			"indicator": "Green" if (net_income - net_expense) > 0 else "Red",
 			"label": profit_label,
 			"datatype": "Currency",
 			"currency": currency,
