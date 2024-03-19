@@ -200,7 +200,7 @@ def get_report_summary(
 		elif periodicity == "Quarterly":
 			period = " The Quarter"
 		elif periodicity == "Monthly":
-			period = " The HMonth"
+			period = " The Month"
 
 		t_profit_label = _("Gross Net Profit" + period)
 		t_income_label = _("Trading Total Income" + period)
