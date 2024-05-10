@@ -5,6 +5,17 @@ app_description = "ABGC's Customise Reports"
 app_email = "hrishikesh@8848digital.com"
 app_license = "MIT"
 
+
+from abgc_reports.custom_credit_note.override.accounts_controller import make_precision_loss_gl_entry, get_gl_dict
+from abgc_reports.custom_credit_note.override.buying_controller import get_asset_items
+from erpnext.controllers.accounts_controller import AccountsController
+from erpnext.controllers.buying_controller import BuyingController
+
+
+AccountsController.make_precision_loss_gl_entry = make_precision_loss_gl_entry
+AccountsController.get_gl_dict = get_gl_dict
+BuyingController.get_asset_items = get_asset_items
+
 # Includes in <head>
 # ------------------
 
@@ -143,7 +154,9 @@ doctype_js = {"Customer" : "customization/customer/customer.js"}
 # Override standard doctype classes
 
 override_doctype_class = {
-	"Asset Repair": "abgc_reports.abgc_reports.override_asset_repair.OverrideAssetRepair"
+	"Asset Repair": "abgc_reports.abgc_reports.override_asset_repair.OverrideAssetRepair",
+	# "Custom Credit Note": "abgc_reports.custom_credit_note.override.accounts_controller.OverrideAccountsController",
+	# "Custom Credit Note": "abgc_reports.custom_credit_note.override.buying_controller.OverrideBuyingController",
 	# 	"ToDo": "custom_app.overrides.CustomToDo"
 }
 
@@ -163,6 +176,9 @@ doc_events = {
 	},
     "Customer":{
         "before_save": "abgc_reports.customization.customer.customer.before_save"
+	},
+    "Custom Credit Note":{
+        "validate": "abgc_reports.custom_credit_note.override.buying_controller.override_valuation"
 	}
 }
 
