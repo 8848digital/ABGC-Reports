@@ -60,7 +60,10 @@ fixtures = [
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Customer" : "customization/customer/customer.js"}
+doctype_js = {
+    "Customer" : "customization/customer/customer.js",
+    "Supplier" : "customization/supplier/supplier.js"
+}
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -163,6 +166,9 @@ doc_events = {
 	},
     "Customer":{
         "before_save": "abgc_reports.customization.customer.customer.before_save"
+	},
+    "Supplier":{
+        "before_save": "abgc_reports.customization.supplier.supplier.before_save"
 	}
 }
 
