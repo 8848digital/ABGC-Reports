@@ -42,6 +42,18 @@ def create_new_customer(customer,currency):
     new_customer.default_currency = currency
     new_customer.is_internal_customer = 0
     new_customer.save()
+    create_address(new_customer.name, customer.name)
+
+def create_address(new_customer, old_customer):
+    address_title = frappe.db.get_value('Dynamic Link',{"link_name":old_customer},["parent"])
+    address = frappe.get_doc("Address",address_title)
+
+    address.append(
+        "links",{
+            'link_doctype':"Customer",
+            'link_name': new_customer
+        })
+    address.save()
 
 def get_customer_group(parent_group, actual_customer_name):
     customer_group_doc = frappe.db.exists('Customer Group',actual_customer_name)
