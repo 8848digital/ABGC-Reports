@@ -2,7 +2,7 @@
 // License: GNU General Public License v3. See license.txt
 
 // render
-frappe.listview_settings["Custom Credit List"] = {
+frappe.listview_settings["FA Credit List"] = {
 	add_fields: [
 		"supplier",
 		"supplier_name",
@@ -46,11 +46,11 @@ frappe.listview_settings["Custom Credit List"] = {
 
 	onload: function (listview) {
 		listview.page.add_action_item(__("Purchase Receipt"), () => {
-			erpnext.bulk_transaction_processing.create(listview, "Custom Credit List", "Purchase Receipt");
+			erpnext.bulk_transaction_processing.create(listview, "FA Credit List", "Purchase Receipt");
 		});
 
 		listview.page.add_action_item(__("Payment"), () => {
-			erpnext.bulk_transaction_processing.create(listview, "Custom Credit List", "Payment Entry");
+			erpnext.bulk_transaction_processing.create(listview, "FA Credit List", "Payment Entry");
 		});
 	},
 };

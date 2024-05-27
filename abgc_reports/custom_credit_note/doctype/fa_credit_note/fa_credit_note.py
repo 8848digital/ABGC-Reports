@@ -53,12 +53,12 @@ class WarehouseMissingError(frappe.ValidationError):
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
 
-class CustomCreditNote(BuyingController):
+class FACreditNote(BuyingController):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.status_updater = [
 			{
-				"source_dt": "Custom Credit Note Item",
+				"source_dt": "FA Credit Note Item",
 				"target_dt": "Purchase Order Item",
 				"join_field": "po_detail",
 				"target_field": "billed_amt",
@@ -467,7 +467,7 @@ class CustomCreditNote(BuyingController):
 		if cint(self.update_stock):
 			self.status_updater.append(
 				{
-					"source_dt": "Custom Credit Note Item",
+					"source_dt": "FA Credit Note Item",
 					"target_dt": "Purchase Order Item",
 					"join_field": "po_detail",
 					"target_field": "received_qty",
@@ -480,14 +480,14 @@ class CustomCreditNote(BuyingController):
 					"second_join_field": "purchase_order_item",
 					"percent_join_field": "purchase_order",
 					"overflow_type": "receipt",
-					"extra_cond": """ and exists(select name from `tabCustom Credit Note`
-					where name=`tabCustom Credit Note Item`.parent and update_stock = 1)""",
+					"extra_cond": """ and exists(select name from `tabFA Credit Note`
+					where name=`tabFA Credit Note Item`.parent and update_stock = 1)""",
 				}
 			)
 			if cint(self.is_return):
 				self.status_updater.append(
 					{
-						"source_dt": "Custom Credit Note Item",
+						"source_dt": "FA Credit Note Item",
 						"target_dt": "Purchase Order Item",
 						"join_field": "po_detail",
 						"target_field": "returned_qty",
@@ -496,8 +496,8 @@ class CustomCreditNote(BuyingController):
 						"second_source_field": "-1 * qty",
 						"second_join_field": "purchase_order_item",
 						"overflow_type": "receipt",
-						"extra_cond": """ and exists (select name from `tabCustom Credit Note`
-						where name=`tabCustom Credit Note Item`.parent and update_stock=1 and is_return=1)""",
+						"extra_cond": """ and exists (select name from `tabFA Credit Note`
+						where name=`tabFA Credit Note Item`.parent and update_stock=1 and is_return=1)""",
 					}
 				)
 
@@ -514,7 +514,7 @@ class CustomCreditNote(BuyingController):
 	def validate_for_repost(self):
 		self.validate_write_off_account()
 		self.validate_expense_account()
-		validate_docs_for_voucher_types(["Custom Credit Note"])
+		validate_docs_for_voucher_types(["FA Credit Note"])
 		validate_docs_for_deferred_accounting([], [self.name])
 
 	def on_submit(self):
@@ -1279,7 +1279,7 @@ class CustomCreditNote(BuyingController):
 		# 	then base_rounding_adjustment becomes zero and error is thrown in GL Entry
 		if not self.is_internal_transfer() and self.rounding_adjustment and self.base_rounding_adjustment:
 			round_off_account, round_off_cost_center = get_round_off_account_and_cost_center(
-				self.company, "Custom Credit Note", self.name, self.use_company_roundoff_cost_center
+				self.company, "FA Credit Note", self.name, self.use_company_roundoff_cost_center
 			)
 
 			gl_entries.append(
@@ -1376,7 +1376,7 @@ class CustomCreditNote(BuyingController):
 				fiscal_year = get_fiscal_year(self.posting_date, company=self.company, as_dict=True)
 
 				pi = frappe.db.sql(
-					"""select name from `tabCustom Credit Note`
+					"""select name from `tabFA Credit Note`
 					where
 						bill_no = %(bill_no)s
 						and supplier = %(supplier)s
@@ -1394,7 +1394,7 @@ class CustomCreditNote(BuyingController):
 
 				if pi:
 					pi = pi[0][0]
-					frappe.throw(_("Supplier Invoice No exists in Custom Credit Note {0}").format(pi))
+					frappe.throw(_("Supplier Invoice No exists in FA Credit Note {0}").format(pi))
 
 	def update_billing_status_in_pr(self, update_modified=True):
 		if self.is_return and not self.update_billed_amount_in_purchase_receipt:
@@ -1439,7 +1439,7 @@ class CustomCreditNote(BuyingController):
 		pr_details_billed_amt = {}
 		pr_details = [d.get("pr_detail") for d in self.get("items") if d.get("pr_detail")]
 		if pr_details:
-			doctype = frappe.qb.DocType("Custom Credit Note Item")
+			doctype = frappe.qb.DocType("FA Credit Note Item")
 			query = (
 				frappe.qb.from_(doctype)
 				.select(doctype.pr_detail, Sum(doctype.amount))
@@ -1581,7 +1581,7 @@ class CustomCreditNote(BuyingController):
 					self.status = "Unpaid"
 				# Check if outstanding amount is 0 due to debit note issued against invoice
 				elif self.is_return == 0 and frappe.db.get_value(
-					"Custom Credit Note", {"is_return": 1, "return_against": self.name, "docstatus": 1}
+					"FA Credit Note", {"is_return": 1, "return_against": self.name, "docstatus": 1}
 				):
 					self.status = "Debit Note Issued"
 				elif self.is_return == 1:
@@ -1599,7 +1599,7 @@ class CustomCreditNote(BuyingController):
 
 # to get details of purchase invoice/receipt from which this doc was created for exchange rate difference handling
 def get_purchase_document_details(doc):
-	if doc.doctype == "Custom Credit Note":
+	if doc.doctype == "FA Credit Note":
 		doc_reference = "purchase_receipt"
 		items_reference = "pr_detail"
 		parent_doctype = "Purchase Receipt"
@@ -1607,8 +1607,8 @@ def get_purchase_document_details(doc):
 	else:
 		doc_reference = "purchase_invoice"
 		items_reference = "purchase_invoice_item"
-		parent_doctype = "Custom Credit Note"
-		child_doctype = "Custom Credit Note Item"
+		parent_doctype = "FA Credit Note"
+		child_doctype = "FA Credit Note Item"
 
 	purchase_receipts_or_invoices = []
 	items = []
@@ -1659,17 +1659,17 @@ def make_regional_gl_entries(gl_entries, doc):
 def make_debit_note(source_name, target_doc=None):
 	from erpnext.controllers.sales_and_purchase_return import make_return_doc
 
-	return make_return_doc("Custom Credit Note", source_name, target_doc)
+	return make_return_doc("FA Credit Note", source_name, target_doc)
 
 
 @frappe.whitelist()
 def make_stock_entry(source_name, target_doc=None):
 	doc = get_mapped_doc(
-		"Custom Credit Note",
+		"FA Credit Note",
 		source_name,
 		{
-			"Custom Credit Note": {"doctype": "Stock Entry", "validation": {"docstatus": ["=", 1]}},
-			"Custom Credit Note Item": {
+			"FA Credit Note": {"doctype": "Stock Entry", "validation": {"docstatus": ["=", 1]}},
+			"FA Credit Note Item": {
 				"doctype": "Stock Entry Detail",
 				"field_map": {"stock_qty": "transfer_qty", "batch_no": "batch_no"},
 			},
@@ -1682,22 +1682,22 @@ def make_stock_entry(source_name, target_doc=None):
 
 @frappe.whitelist()
 def change_release_date(name, release_date=None):
-	if frappe.db.exists("Custom Credit Note", name):
-		pi = frappe.get_doc("Custom Credit Note", name)
+	if frappe.db.exists("FA Credit Note", name):
+		pi = frappe.get_doc("FA Credit Note", name)
 		pi.db_set("release_date", release_date)
 
 
 @frappe.whitelist()
 def unblock_invoice(name):
-	if frappe.db.exists("Custom Credit Note", name):
-		pi = frappe.get_doc("Custom Credit Note", name)
+	if frappe.db.exists("FA Credit Note", name):
+		pi = frappe.get_doc("FA Credit Note", name)
 		pi.unblock_invoice()
 
 
 @frappe.whitelist()
 def block_invoice(name, release_date, hold_comment=None):
-	if frappe.db.exists("Custom Credit Note", name):
-		pi = frappe.get_doc("Custom Credit Note", name)
+	if frappe.db.exists("FA Credit Note", name):
+		pi = frappe.get_doc("FA Credit Note", name)
 		pi.block_invoice(hold_comment, release_date)
 
 
@@ -1705,7 +1705,7 @@ def block_invoice(name, release_date, hold_comment=None):
 def make_inter_company_sales_invoice(source_name, target_doc=None):
 	from erpnext.accounts.doctype.sales_invoice.sales_invoice import make_inter_company_transaction
 
-	return make_inter_company_transaction("Custom Credit Note", source_name, target_doc)
+	return make_inter_company_transaction("FA Credit Note", source_name, target_doc)
 
 
 @frappe.whitelist()
@@ -1720,16 +1720,16 @@ def make_purchase_receipt(source_name, target_doc=None):
 		)
 
 	doc = get_mapped_doc(
-		"Custom Credit Note",
+		"FA Credit Note",
 		source_name,
 		{
-			"Custom Credit Note": {
+			"FA Credit Note": {
 				"doctype": "Purchase Receipt",
 				"validation": {
 					"docstatus": ["=", 1],
 				},
 			},
-			"Custom Credit Note Item": {
+			"FA Credit Note Item": {
 				"doctype": "Purchase Receipt Item",
 				"field_map": {
 					"name": "purchase_invoice_item",

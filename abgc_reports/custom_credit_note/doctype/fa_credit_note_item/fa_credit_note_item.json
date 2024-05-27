@@ -897,7 +897,7 @@
  "modified": "2024-05-09 18:03:02.669643",
  "modified_by": "Administrator",
  "module": "Custom Credit Note",
- "name": "Custom Credit Note Item",
+ "name": "FA Credit Note Item",
  "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [],

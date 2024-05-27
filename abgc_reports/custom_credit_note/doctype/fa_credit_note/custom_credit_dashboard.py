@@ -9,7 +9,7 @@ def get_data():
 			"Payment Entry": "reference_name",
 			"Payment Request": "reference_name",
 			"Landed Cost Voucher": "receipt_document",
-			"Custom Credit Note": "return_against",
+			"FA Credit Note": "return_against",
 			"Auto Repeat": "reference_document",
 		},
 		"internal_links": {
@@ -22,7 +22,7 @@ def get_data():
 				"label": _("Reference"),
 				"items": ["Purchase Order", "Purchase Receipt", "Asset", "Landed Cost Voucher"],
 			},
-			{"label": _("Returns"), "items": ["Custom Credit Note"]},
+			{"label": _("Returns"), "items": ["FA Credit Note"]},
 			{"label": _("Subscription"), "items": ["Auto Repeat"]},
 		],
 	}

@@ -7,7 +7,8 @@ app_license = "MIT"
 
 
 from abgc_reports.custom_credit_note.override.accounts_controller import make_precision_loss_gl_entry, get_gl_dict
-from abgc_reports.custom_credit_note.override.buying_controller import get_asset_items
+from abgc_reports.custom_credit_note.override.buying_controller import (
+    get_asset_items, on_submit, process_fixed_asset, make_asset)
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.controllers.buying_controller import BuyingController
 
@@ -15,6 +16,9 @@ from erpnext.controllers.buying_controller import BuyingController
 AccountsController.make_precision_loss_gl_entry = make_precision_loss_gl_entry
 AccountsController.get_gl_dict = get_gl_dict
 BuyingController.get_asset_items = get_asset_items
+BuyingController.on_submit = on_submit
+BuyingController.process_fixed_asset = process_fixed_asset
+BuyingController.make_asset = make_asset
 
 # Includes in <head>
 # ------------------
@@ -183,7 +187,7 @@ doc_events = {
     "Supplier":{
         "before_save": "abgc_reports.customization.supplier.supplier.before_save"
   	},
-    "Custom Credit Note":{
+    "FA Credit Note":{
         "validate": "abgc_reports.custom_credit_note.override.buying_controller.override_valuation"
 	}
 }
