@@ -20,9 +20,7 @@ from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
 from erpnext.accounts.general_ledger import get_round_off_account_and_cost_center
 
 
-# class OverrideAccountsController(AccountsController):
 def get_gl_dict(self, args, account_currency=None, item=None):
-    print("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
     """this method populates the common properties of a gl entry record"""
     
     posting_date = args.get("posting_date") or self.get("posting_date")
@@ -79,7 +77,7 @@ def get_gl_dict(self, args, account_currency=None, item=None):
         "Payment Entry",
         "Purchase Receipt",
         "Purchase Invoice",
-        "Custom Credit Note",
+        "FA Credit Note",
         "Stock Entry",
     ]:
         self.validate_account_currency(gl_dict.account, account_currency)
@@ -97,7 +95,6 @@ def get_gl_dict(self, args, account_currency=None, item=None):
 
 
 def make_precision_loss_gl_entry(self, gl_entries):
-    print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOoo")
     round_off_account, round_off_cost_center = get_round_off_account_and_cost_center(
         self.company, "Purchase Invoice", self.name, self.use_company_roundoff_cost_center
     )
@@ -106,8 +103,8 @@ def make_precision_loss_gl_entry(self, gl_entries):
         self.get("net_total") * self.conversion_rate, self.precision("net_total")
     )
     
-    credit_or_debit = "credit" if self.doctype == "Purchase Invoice" or self.doctype == "Custom Credit Note" else "debit"
-    against = self.supplier if self.doctype == "Purchase Invoice" or self.doctype == "Custom Credit Note" else self.customer
+    credit_or_debit = "credit" if self.doctype == "Purchase Invoice" or self.doctype == "FA Credit Note" else "debit"
+    against = self.supplier if self.doctype == "Purchase Invoice" or self.doctype == "FA Credit Note" else self.customer
     
     if precision_loss:
         gl_entries.append(

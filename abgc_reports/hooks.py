@@ -177,7 +177,7 @@ doc_events = {
     "Customer":{
         "before_save": "abgc_reports.customization.customer.customer.before_save"
 	},
-    "Custom Credit Note":{
+    "FA Credit Note":{
         "validate": "abgc_reports.custom_credit_note.override.buying_controller.override_valuation"
 	}
 }

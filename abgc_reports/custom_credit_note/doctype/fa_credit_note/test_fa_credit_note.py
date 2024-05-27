@@ -5,5 +5,5 @@
 from frappe.tests.utils import FrappeTestCase
 
 
-class TestCustomCreditNote(FrappeTestCase):
+class TestFACreditNote(FrappeTestCase):
 	pass
