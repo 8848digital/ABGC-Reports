@@ -25,7 +25,6 @@ def on_submit(self):
             field = "custom_fa_credit_note"
         else:
             field ="purchase_receipt"
-        print(2222222222222222, field)
         self.process_fixed_asset()
         self.update_fixed_asset(field)
     
@@ -36,9 +35,7 @@ def on_submit(self):
 
 
 def process_fixed_asset(self):
-    print(8888888888888888888888,self.doctype,self.update_stock)
     if (self.doctype == "Purchase Invoice" or self.doctype == "FA Credit Note") and not self.update_stock:
-        print(999999999999999999)
         return
 
     asset_items = self.get_asset_items()
@@ -73,11 +70,15 @@ def make_asset(self, row, is_grouped_asset=False):
 				"asset_quantity": asset_quantity,
 				"purchase_receipt": self.name if self.doctype == "Purchase Receipt" else None,
 				"purchase_invoice": self.name if self.doctype == "Purchase Invoice" else None,
-				"custom_fa_credit_note": self.name if self.doctype == "FA Credit Note" else None,
 				"cost_center": row.cost_center,
 			}
 		)
-
+		if self.doctype == "FA Credit Note":
+			asset.update({
+                    "custom_fa_credit_note": self.name,
+                    "is_existing_asset": 1,
+                    "available_for_use_date": self.posting_date
+                         })
 		asset.flags.ignore_validate = True
 		asset.flags.ignore_mandatory = True
 		asset.set_missing_values()
