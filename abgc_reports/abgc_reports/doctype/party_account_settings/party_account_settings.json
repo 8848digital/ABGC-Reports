@@ -1,0 +1,74 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-05-23 13:40:55.131184",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "supplier_currency_account_section",
+  "supplier_account",
+  "customer_currency_account_section",
+  "customer_account"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "default": "ABGC DMCC",
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "depends_on": "eval:doc.company",
+   "fieldname": "supplier_currency_account_section",
+   "fieldtype": "Section Break",
+   "label": "Supplier Currency Account"
+  },
+  {
+   "fieldname": "supplier_account",
+   "fieldtype": "Table",
+   "options": "Supplier Account"
+  },
+  {
+   "depends_on": "eval:doc.company",
+   "fieldname": "customer_currency_account_section",
+   "fieldtype": "Section Break",
+   "label": "Customer Currency Account"
+  },
+  {
+   "fieldname": "customer_account",
+   "fieldtype": "Table",
+   "options": "Customer Account"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-05-23 14:06:20.061100",
+ "modified_by": "Administrator",
+ "module": "Abgc Reports",
+ "name": "Party Account Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

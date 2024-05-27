@@ -34,7 +34,6 @@ function showCurrencyDialog(frm) {
 }
 
 function createCustomer(frm,values){
-    console.log("Values",values)
     frappe.call({
         method: "abgc_reports.customization.customer.customer.create_customer",
         args: {
@@ -42,7 +41,8 @@ function createCustomer(frm,values){
             doc: frm.doc
         },
         callback: function(r) {
-            
+            var msg = r.message.link
+            frappe.msgprint("New customer " + msg + " has been created. Click on the customer to view details.")
         }
     });
 }

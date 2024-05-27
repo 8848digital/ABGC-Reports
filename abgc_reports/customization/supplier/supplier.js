@@ -34,7 +34,6 @@ function showCurrencyDialog(frm) {
 }
 
 function createSupplier(frm,values){
-    console.log("Values",values)
     frappe.call({
         method: "abgc_reports.customization.supplier.supplier.create_supplier",
         args: {
@@ -42,7 +41,8 @@ function createSupplier(frm,values){
             doc: frm.doc
         },
         callback: function(r) {
-            
+            var msg = r.message.link
+            frappe.msgprint("New supplier " + msg + " has been created. Click on the supplier to view details.")
         }
     });
 }
