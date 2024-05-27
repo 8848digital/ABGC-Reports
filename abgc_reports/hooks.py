@@ -182,7 +182,7 @@ doc_events = {
 	},
     "Supplier":{
         "before_save": "abgc_reports.customization.supplier.supplier.before_save"
-  },
+  	},
     "Custom Credit Note":{
         "validate": "abgc_reports.custom_credit_note.override.buying_controller.override_valuation"
 	}
