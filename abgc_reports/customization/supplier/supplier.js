@@ -1,4 +1,4 @@
-frappe.ui.form.on("Customer", {
+frappe.ui.form.on("Supplier", {
 	refresh(frm) {
         frm.add_custom_button(__('Create from Currency'), function(){
             showCurrencyDialog(frm)
@@ -12,7 +12,7 @@ function showCurrencyDialog(frm) {
     }
     else{
         let d = new frappe.ui.Dialog({
-            title: 'Select Currency For New Customer',
+            title: 'Select Currency For New Supplier',
             fields: [
                 {
                     label: 'Currency',
@@ -23,9 +23,9 @@ function showCurrencyDialog(frm) {
                 }
             ],
             size: 'small', // small, large, extra-large 
-            primary_action_label: 'Create Customer',
+            primary_action_label: 'Create Supplier',
             primary_action(values) {
-                createCustomer(frm,values);
+                createSupplier(frm,values);
                 d.hide();
             }
         });
@@ -33,16 +33,16 @@ function showCurrencyDialog(frm) {
     }
 }
 
-function createCustomer(frm,values){
+function createSupplier(frm,values){
     frappe.call({
-        method: "abgc_reports.customization.customer.customer.create_customer",
+        method: "abgc_reports.customization.supplier.supplier.create_supplier",
         args: {
             currency: values.currency,
             doc: frm.doc
         },
         callback: function(r) {
             var msg = r.message.link
-            frappe.msgprint("New customer " + msg + " has been created. Click on the customer to view details.")
+            frappe.msgprint("New supplier " + msg + " has been created. Click on the supplier to view details.")
         }
     });
 }
