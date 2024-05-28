@@ -77,7 +77,8 @@ def make_asset(self, row, is_grouped_asset=False):
 			asset.update({
                     "custom_fa_credit_note": self.name,
                     "is_existing_asset": 1,
-                    "available_for_use_date": self.posting_date
+                    "available_for_use_date": self.posting_date,
+                    "calculate_depreciation": 0
                          })
 		asset.flags.ignore_validate = True
 		asset.flags.ignore_mandatory = True

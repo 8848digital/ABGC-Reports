@@ -27,15 +27,14 @@ fixtures = [
 	{
 		"doctype": "Custom Field",
 		"filters": [
-			[
-				"dt",
-				"in",
-				(
-					# Core Doctypes
-					"Asset Repair"
-				),
-			]
-		],
+            ["dt", "in", ["Asset Repair"]]
+        ]
+	},
+	{
+		"doctype": "Custom Field",
+		"filters": [
+            ["module", "=", "Abgc Reports"],
+        ]
 	},
 	{
 		"doctype": "Client Script",
