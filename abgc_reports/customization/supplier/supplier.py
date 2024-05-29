@@ -100,3 +100,20 @@ def get_company_accounts(account_currency):
     account = frappe.get_doc('Party Account Settings')
     accounts_by_currency = {currency.currency: currency.account for currency in account.supplier_account}
     return accounts_by_currency.get(account_currency)
+
+@frappe.whitelist()
+def get_currency(name):
+    all_currency_list = frappe.get_all('Currency',filters={'enabled':1})
+    used_currency_list = frappe.get_all(
+            "Supplier",
+            filters={'custom_supplier_name': name},
+            fields=["default_currency"]
+        )
+    
+    all_currency_set = {currency['name'] for currency in all_currency_list}
+    used_currency_set = {currency['default_currency'] for currency in used_currency_list}
+
+    unused_currency_set = all_currency_set - used_currency_set
+    unused_currency_list = list(unused_currency_set)
+
+    return unused_currency_list

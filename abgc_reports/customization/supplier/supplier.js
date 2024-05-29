@@ -11,6 +11,8 @@ function showCurrencyDialog(frm) {
         frappe.msgprint("Please set the billing currency")
     }
     else{
+        let doc = frm.doc;
+
         let d = new frappe.ui.Dialog({
             title: 'Select Currency For New Supplier',
             fields: [
@@ -18,18 +20,40 @@ function showCurrencyDialog(frm) {
                     label: 'Currency',
                     fieldname: 'currency',
                     fieldtype: 'Link',
+                    reqd: 1,
                     options: 'Currency',
-                    reqd: 1
+                    get_query: function() {
+                        let filters = {};
+                        frappe.call({
+                            method: "abgc_reports.customization.supplier.supplier.get_currency",
+                            args: {
+                                name: doc.custom_supplier_name
+                            },
+                            async: false,
+                            callback: function(r) {
+                                if (r.message) {
+                                    filters = {
+                                        filters: {
+                                            'name': ['in', r.message]
+                                        }
+                                    };
+                                }
+                            }
+                        });
+                        return filters;
+                    }
                 }
             ],
-            size: 'small', // small, large, extra-large 
+            size: 'small', // small, large, extra-large
             primary_action_label: 'Create Supplier',
             primary_action(values) {
-                createSupplier(frm,values);
+                createSupplier(frm, values);
                 d.hide();
             }
         });
+        
         d.show();
+
     }
 }
 
