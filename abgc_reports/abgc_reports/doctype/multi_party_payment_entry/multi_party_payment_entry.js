@@ -11,15 +11,18 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
 
         frm.toggle_display("account_currency_from_to", false);
         frm.toggle_display("account_currency_to", false);
-        var partys=frappe.db.get_list(`${frm.doc.party}`, {
-            fields: ['name'],
-            limit: 500,})
-            partys.then(function(data){
-            data.forEach(function(value){
-                party_list.push(value.name)
+        if (frm.doc.party != undefined ){
+            var partys=frappe.db.get_list(`${frm.doc.party}`, {
+                fields: ['name'],
+                limit: 500,})
+                partys.then(function(data){
+                data.forEach(function(value){
+                    party_list.push(value.name)
+                })
+                frm.fields_dict["payment_table"].grid.update_docfield_property('part_type', 'options', party_list);
             })
-            frm.fields_dict["payment_table"].grid.update_docfield_property('part_type', 'options', party_list);
-        })
+        }
+       
     },
 
     account_currency_from:function(frm){
