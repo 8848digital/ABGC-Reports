@@ -27,8 +27,14 @@ fixtures = [
 	{
 		"doctype": "Custom Field",
 		"filters": [
-			["module", "=", "Abgc Reports"]
+			["module", "=", "Abgc Reports"], 
 		],
+	},
+    {
+		"doctype": "Custom Field",
+		"filters": [
+            ["module", "=", "Accounts"]  
+		]
 	},
 	{
 		"doctype": "Client Script",
@@ -37,7 +43,7 @@ fixtures = [
 				"dt",
 				"in",
 				(
-					# Core Doctypes
+					
 					"Asset Repair"
 				),
 			]
@@ -46,7 +52,7 @@ fixtures = [
     {
 		"doctype": "Property Setter",
 		"filters": {"module": ["in", "Abgc Reports"]}
-	},
+	}
 ]
 
 # include js, css files in header of desk.html
@@ -71,7 +77,8 @@ fixtures = [
 doctype_js = {
     "Customer" : "customization/customer/customer.js",
     "Supplier" : "customization/supplier/supplier.js",
-    "Sales Invoice": "customization/sales_invoice/sales_invoice.js"
+    "Sales Invoice": "customization/sales_invoice/sales_invoice.js",
+    "Journal Entry":"customization/journal_entry/journal.js"
 }
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
