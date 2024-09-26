@@ -15,8 +15,8 @@ class MultiPartyPaymentEntry(Document):
 				payment_entry.party_type = self.party
 				payment_entry.party = value.part_type
 				payment_entry.paid_amount = value.paid_amount
-				payment_entry.paid_from = self.account_currency_from
-				payment_entry.paid_to = self.account_currency_to_2
+				payment_entry.paid_from = value.account_paid_from
+				payment_entry.paid_to = value.account_paid_to
 				payment_entry.received_amount = value.paid_amount
 				payment_entry.reference_no = self.cheque__refrence_no
 				payment_entry.reference_date = self.cheque__refrence_date
@@ -53,11 +53,10 @@ class MultiPartyPaymentEntry(Document):
 			frappe.db.commit()
 
 		except Exception as e:
-
-			frappe.db.rollback()
+			frappe.db.rollback()  
 			frappe.msgprint("Error: {0}".format(e))
-			frappe.db.rollback("before_payment_entry_creation")
 			raise frappe.ValidationError("Payment entry creation failed, document submission aborted.")
+
 
 
 	def validate(self):
@@ -67,7 +66,6 @@ class MultiPartyPaymentEntry(Document):
 				if sales['customer'] == value.part_type and sales['company'] == self.company:
 					value.source_exchange_rate =  sales.conversion_rate
 
-		
 		for refrence in self.payment_entry_refrence:
 			if refrence.allocated_amount > refrence.outstanding:
 				frappe.throw('The allocated amount must not be greater than the outstanding amount' )
@@ -75,6 +73,13 @@ class MultiPartyPaymentEntry(Document):
 		
 
 
+@frappe.whitelist(allow_guest=True)
+def get_company_account(**kwargs):
+	doc=frappe.get_doc('Mode of Payment',kwargs.get('mode_of_payment'))
+	
+	for accounts in doc.accounts:
+		if kwargs.get('comapny') == accounts.company:
+			return  accounts.default_account
 
 
 
