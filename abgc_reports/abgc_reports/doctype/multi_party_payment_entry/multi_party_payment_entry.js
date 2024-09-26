@@ -9,8 +9,6 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
 
     onload:function(frm){
 
-        frm.toggle_display("account_currency_from_to", false);
-        frm.toggle_display("account_currency_to", false);
         if (frm.doc.party != undefined ){
             var partys=frappe.db.get_list(`${frm.doc.party}`, {
                 fields: ['name'],
@@ -25,21 +23,6 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
        
     },
 
-    account_currency_from:function(frm){
-
-      if (frm.doc.account_currency_from != undefined ) {
-        frm.toggle_display("account_currency_from_to", true);
-      }
-      
-    },
-
-    account_currency_to_2:function(frm){
-
-        if (frm.doc.account_currency_to_2 != undefined ) {
-            frm.toggle_display("account_currency_to", true);
-          }
-    },
-
     party:function(frm){
         var partys=frappe.db.get_list(`${frm.doc.party}`, {
             fields: ['name'],
@@ -51,7 +34,37 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
             frm.fields_dict["payment_table"].grid.update_docfield_property('part_type', 'options', party_list);
         })
     },
-
+    mode_of_payment:function(frm){
+        if (frm.doc.company != undefined){
+            frappe.call(
+                {
+                    method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.get_company_account',
+                    args:{
+                        'mode_of_payment':frm.doc.mode_of_payment,
+                        'comapny':frm.doc.company
+                    },
+                    callback:function(data){
+                        if(frm.doc.payment_type =='Pay'){
+                            $.each(frm.doc.payment_table || [], function(i, v) {
+                                console.log(v.name,1111)
+                                frappe.model.set_value(v.doctype, v.name, "account_paid_from",data.message)
+                            })
+                        }else{
+                            $.each(frm.doc.payment_table || [], function(i, v) {
+                                
+                                frappe.model.set_value(v.doctype, v.name, "account_paid_to",data.message)
+                            })
+                        }
+                    }
+                }
+            )
+        }
+        else{
+            frm.set_value('mode_of_payment','')
+            frappe.throw('Please set company');  
+        }
+        
+},
     refresh: function(frm) {
         frm.toggle_display("account_currency_from_to", true);
         frm.toggle_display("account_currency_to", true);
@@ -64,7 +77,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
                 }
             )
         
-        frm.set_query("account_currency_from", function() {
+        frm.fields_dict['payment_table'].grid.get_field('account_paid_from').get_query = function() {
     
 			var account_type=[]
 			if (frm.doc.payment_type =='Recieve'){
@@ -83,9 +96,9 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
                     "company": frm.doc.company
                 }
             };
-        });
+        };
 
-        frm.set_query("account_currency_to_2", function() {
+        frm.fields_dict['payment_table'].grid.get_field('account_paid_to').get_query = function() {
 			var account_type=[]
 			if (frm.doc.payment_type =='Pay'){
 				account_type.push('Receivable')
@@ -103,7 +116,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
                     "company": frm.doc.company
                 }
             };
-        });
+        };
 
 		frm.fields_dict['payment_entry_refrence'].grid.get_field('reference_doctype').get_query = function(frm, cdt, cdn) {
 			var doctypes = [];
@@ -116,6 +129,25 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
             return {
 				filters: { "name": ["in", doctypes] }
             };
+        };
+// ----------
+        frm.fields_dict['payment_entry_refrence'].grid.get_field('reference_name').get_query = function(frm, cdt, cdn) {
+            var filter_party_list=[]
+
+            cur_frm.doc.payment_table.forEach(function(party_value){
+                    filter_party_list.push(party_value.part_type)
+            })
+            
+            if (cur_frm.doc.party == 'Customer'){
+                return {
+                    filters: { "customer": ["in", filter_party_list] }
+                };
+            }else{
+                return {
+                    filters: { "supplier": ["in", filter_party_list] }
+                };
+            }
+            
         };
     }
 });

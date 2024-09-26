@@ -12,16 +12,13 @@
   "payment_type",
   "column_break_udlwn",
   "company",
+  "mode_of_payment",
   "section_break_xza81",
   "party",
   "payment_table",
   "amended_from",
   "section_break_kk73z",
-  "account_currency_from",
-  "account_currency_from_to",
   "column_break_bkiwl",
-  "account_currency_to_2",
-  "account_currency_to",
   "section_break_tgypf",
   "payment_entry_refrence",
   "writeoff",
@@ -53,22 +50,6 @@
    "label": "Company",
    "options": "Company",
    "reqd": 1
-  },
-  {
-   "fieldname": "account_currency_from",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Account Paid From",
-   "options": "Account",
-   "reqd": 1
-  },
-  {
-   "fetch_from": "account_currency_to_2.account_currency",
-   "fieldname": "account_currency_to",
-   "fieldtype": "Link",
-   "label": "Account Currency To",
-   "options": "Currency",
-   "read_only": 1
   },
   {
    "fieldname": "amended_from",
@@ -125,21 +106,6 @@
    "reqd": 1
   },
   {
-   "fetch_from": "account_currency_from.account_currency",
-   "fieldname": "account_currency_from_to",
-   "fieldtype": "Link",
-   "label": "Account Currency From",
-   "options": "Currency",
-   "read_only": 1
-  },
-  {
-   "fieldname": "account_currency_to_2",
-   "fieldtype": "Link",
-   "label": "Account Paid To",
-   "options": "Account",
-   "reqd": 1
-  },
-  {
    "fieldname": "section_break_tgypf",
    "fieldtype": "Section Break"
   },
@@ -160,12 +126,18 @@
    "fieldtype": "Table",
    "label": "WriteOff",
    "options": "Writoff"
+  },
+  {
+   "fieldname": "mode_of_payment",
+   "fieldtype": "Link",
+   "label": "Mode of Payment",
+   "options": "Mode of Payment"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-09-25 17:19:14.512259",
+ "modified": "2024-09-26 16:08:57.188814",
  "modified_by": "Administrator",
  "module": "Abgc Reports",
  "name": "Multi-Party Payment Entry",
