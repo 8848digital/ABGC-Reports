@@ -1,0 +1,191 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{company}-{####}",
+ "creation": "2024-09-19 11:21:00.178821",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "posting_date",
+  "payment_type",
+  "column_break_udlwn",
+  "company",
+  "section_break_xza81",
+  "party",
+  "payment_table",
+  "amended_from",
+  "section_break_kk73z",
+  "account_currency_from",
+  "account_currency_from_to",
+  "column_break_bkiwl",
+  "account_currency_to_2",
+  "account_currency_to",
+  "section_break_tgypf",
+  "payment_entry_refrence",
+  "writeoff",
+  "section_break_sj5nw",
+  "cheque__refrence_no",
+  "column_break_fypl7",
+  "cheque__refrence_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "payment_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Payment Type",
+   "options": "Recieve\nPay\nInternal Transfer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "payment_table",
+   "fieldtype": "Table",
+   "label": "Party Table",
+   "options": "Multi Party Entry",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "account_currency_from",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Account Paid From",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "account_currency_to_2.account_currency",
+   "fieldname": "account_currency_to",
+   "fieldtype": "Link",
+   "label": "Account Currency To",
+   "options": "Currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Multi-Party Payment Entry",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Posting Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_udlwn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_xza81",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_kk73z",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "payment_entry_refrence",
+   "fieldtype": "Table",
+   "label": "Payment Entry Refrence",
+   "options": "Payment Refrences"
+  },
+  {
+   "fieldname": "cheque__refrence_no",
+   "fieldtype": "Data",
+   "label": "Cheque / Refrence No",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cheque__refrence_date",
+   "fieldtype": "Date",
+   "label": "Cheque / Refrence Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Link",
+   "label": "Party Type",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "account_currency_from.account_currency",
+   "fieldname": "account_currency_from_to",
+   "fieldtype": "Link",
+   "label": "Account Currency From",
+   "options": "Currency",
+   "read_only": 1
+  },
+  {
+   "fieldname": "account_currency_to_2",
+   "fieldtype": "Link",
+   "label": "Account Paid To",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_tgypf",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_bkiwl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_sj5nw",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_fypl7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "writeoff",
+   "fieldtype": "Table",
+   "label": "WriteOff",
+   "options": "Writoff"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2024-09-25 17:19:14.512259",
+ "modified_by": "Administrator",
+ "module": "Abgc Reports",
+ "name": "Multi-Party Payment Entry",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
