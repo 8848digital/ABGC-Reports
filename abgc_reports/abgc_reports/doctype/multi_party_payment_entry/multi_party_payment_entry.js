@@ -8,7 +8,7 @@ var account_to=''
 frappe.ui.form.on('Multi-Party Payment Entry', {
 
     onload:function(frm){
-
+        console.log('workess 2')
         if (frm.doc.party != undefined ){
             var partys=frappe.db.get_list(`${frm.doc.party}`, {
                 fields: ['name'],
@@ -16,6 +16,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
                 partys.then(function(data){
                 data.forEach(function(value){
                     party_list.push(value.name)
+                    console.log(party_list,'onload function')
                 })
                 frm.fields_dict["payment_table"].grid.update_docfield_property('part_type', 'options', party_list);
             })
@@ -24,12 +25,15 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
     },
 
     party:function(frm){
+        console.log('workess 1')
         var partys=frappe.db.get_list(`${frm.doc.party}`, {
+            
             fields: ['name'],
             limit: 500,})
         partys.then(function(data){
             data.forEach(function(value){
                 party_list.push(value.name)
+                console.log(party_list)
             })
             frm.fields_dict["payment_table"].grid.update_docfield_property('part_type', 'options', party_list);
         })
