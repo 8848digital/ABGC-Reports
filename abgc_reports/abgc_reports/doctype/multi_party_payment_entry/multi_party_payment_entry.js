@@ -18,6 +18,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
                     party_list.push(value.name)
                     console.log(party_list,'onload function')
                 })
+
                 frm.fields_dict["payment_table"].grid.update_docfield_property('part_type', 'options', party_list);
             })
         }
@@ -35,6 +36,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
                 party_list.push(value.name)
                 console.log(party_list)
             })
+            console.log(party_list,'after_party')
             frm.fields_dict["payment_table"].grid.update_docfield_property('part_type', 'options', party_list);
         })
     },
