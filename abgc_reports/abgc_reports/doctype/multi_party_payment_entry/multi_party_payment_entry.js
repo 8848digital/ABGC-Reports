@@ -8,38 +8,19 @@ var account_to=''
 frappe.ui.form.on('Multi-Party Payment Entry', {
 
     onload:function(frm){
-        console.log('workess 2')
-        if (frm.doc.party != undefined ){
-            var partys=frappe.db.get_list(`${frm.doc.party}`, {
-                fields: ['name'],
-                limit: 500,})
-                partys.then(function(data){
-                data.forEach(function(value){
-                    party_list.push(value.name)
-                    console.log(party_list,'onload function')
-                })
-
-                frm.fields_dict["payment_table"].grid.update_docfield_property('part_type', 'options', party_list);
-            })
-        }
-       
+        $.each(frm.doc.payment_table || [], function(i, v) {
+            console.log(v.name,1111)
+            frappe.model.set_value(v.doctype, v.name, "party_type",frm.doc.party)
+        })
     },
 
     party:function(frm){
-        console.log('workess 1')
-        var partys=frappe.db.get_list(`${frm.doc.party}`, {
-            
-            fields: ['name'],
-            limit: 500,})
-        partys.then(function(data){
-            data.forEach(function(value){
-                party_list.push(value.name)
-                console.log(party_list)
-            })
-            console.log(party_list,'after_party')
-            frm.fields_dict["payment_table"].grid.update_docfield_property('part_type', 'options', party_list);
+        $.each(frm.doc.payment_table || [], function(i, v) {
+            console.log(v.name,1111)
+            frappe.model.set_value(v.doctype, v.name, "party_type",frm.doc.party)
         })
     },
+
     mode_of_payment:function(frm){
         if (frm.doc.company != undefined){
             frappe.call(
@@ -136,7 +117,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
 				filters: { "name": ["in", doctypes] }
             };
         };
-// ----------
+
         frm.fields_dict['payment_entry_refrence'].grid.get_field('reference_name').get_query = function(frm, cdt, cdn) {
             var filter_party_list=[]
 
@@ -169,6 +150,15 @@ frappe.ui.form.on('Payment Refrences', {
         })
     }
 
+})
+
+frappe.ui.form.on('Multi Party Entry', {
+    payment_table_add:function(frm,cdn,cdt){
+        console.log('ddddd')
+        var d = locals[cdn][cdt];
+        console.log(d)
+        frappe.model.set_value(d.doctype, d.name, "party_type",cur_frm.doc.party);
+    }
 })
 
 
