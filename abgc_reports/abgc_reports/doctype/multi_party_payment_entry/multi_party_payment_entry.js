@@ -65,44 +65,82 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
             )
         
         frm.fields_dict['payment_table'].grid.get_field('account_paid_from').get_query = function() {
-    
-			var account_type=[]
-			if (frm.doc.payment_type =='Recieve'){
-				account_type.push('Receivable')
-			}
-			else if (frm.doc.payment_type =='Pay'){
-				account_type.push('Bank','Cash')
-			}
-			else{
-				account_type.push('Bank','Cash')
-			}
-            return {
-                filters: {
-                    "account_type": ["in", account_type],
-                    "is_group": 0,
-                    "company": frm.doc.company
+			if (frm.doc.payment_type =='Recieve' && frm.doc.party == 'Supplier'){
+                return {
+                    filters: {
+                        "account_type": ["in", ['Payable'] ],
+                        "is_group": 0,
+                        "company": frm.doc.company
+                    }
                 }
-            };
+			}
+			else if (frm.doc.payment_type =='Pay' && frm.doc.party == 'Supplier'){
+                return {
+                    filters: {
+                        "account_type": ['in', ['Bank','Cash'] ],
+                        "is_group": 0,
+                        "company": frm.doc.company
+                    }
+                }
+			}
+            else if(frm.doc.payment_type =='Recieve' && frm.doc.party == 'Customer'){
+                return {
+                    filters: {
+                        "account_type": ['in', ['Receivable'] ],
+                        "is_group": 0,
+                        "company": frm.doc.company
+                    }
+                }
+			}
+            else if(frm.doc.payment_type =='Pay' && frm.doc.party == 'Customer'){
+                return {
+                    filters: {
+                        "account_type": ['in', ['Bank','Cash'] ],
+                        "is_group": 0,
+                        "company": frm.doc.company
+                    }
+                }
+			}
+			
         };
 
         frm.fields_dict['payment_table'].grid.get_field('account_paid_to').get_query = function() {
-			var account_type=[]
-			if (frm.doc.payment_type =='Pay'){
-				account_type.push('Receivable')
-			}
-			else if (frm.doc.payment_type =='Recieve'){
-				account_type.push('Bank','Cash')
-			}
-			else{
-				account_type.push('Bank','Cash')
-			}
-            return {
-                filters: {
-                    "account_type": ["in", account_type	],
-                    "is_group": 0,
-                    "company": frm.doc.company
+			if (frm.doc.payment_type =='Recieve' && frm.doc.party == 'Supplier'){
+                return {
+                    filters: {
+                        "account_type": ["in", ['Bank','Cash'] ],
+                        "is_group": 0,
+                        "company": frm.doc.company
+                    }
                 }
-            };
+			}
+			else if (frm.doc.payment_type =='Pay' && frm.doc.party == 'Supplier'){
+                return {
+                    filters: {
+                        "account_type": ['in', ['Payable'] ],
+                        "is_group": 0,
+                        "company": frm.doc.company
+                    }
+                }
+			}
+            else if(frm.doc.payment_type =='Recieve' && frm.doc.party == 'Customer'){
+                return {
+                    filters: {
+                        "account_type": ['in', ['Bank','Cash'] ],
+                        "is_group": 0,
+                        "company": frm.doc.company
+                    }
+                }
+			}
+            else if(frm.doc.payment_type =='Pay' && frm.doc.party == 'Customer'){
+                return {
+                    filters: {
+                        "account_type": ['in', ['Receivable'] ],
+                        "is_group": 0,
+                        "company": frm.doc.company
+                    }
+                }
+			}
         };
 
 		frm.fields_dict['payment_entry_refrence'].grid.get_field('reference_doctype').get_query = function(frm, cdt, cdn) {
@@ -127,13 +165,19 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
             
             if (cur_frm.doc.party == 'Customer'){
                 return {
-                    filters: { "customer": ["in", filter_party_list] }
+                    filters: { "customer": ["in", filter_party_list] , 'outstanding_amount':['>' , 0] }
                 };
             }else{
                 return {
-                    filters: { "supplier": ["in", filter_party_list] }
+                    filters: { "supplier": ["in", filter_party_list] , 'outstanding_amount':['>' , 0]}
                 };
             }
+            
+
+
+
+
+
             
         };
     }
