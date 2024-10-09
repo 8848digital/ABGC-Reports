@@ -15,6 +15,12 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
     },
 
     party:function(frm){
+        if (!frm.doc.company) {
+            frm.doc.party =''
+            frm.refresh_field('party')
+            frappe.throw('Please Select Company First')
+            
+        }
         $.each(frm.doc.payment_table || [], function(i, v) {
             console.log(v.name,1111)
             frappe.model.set_value(v.doctype, v.name, "party_type",frm.doc.party)
@@ -33,12 +39,10 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
                     callback:function(data){
                         if(frm.doc.payment_type =='Pay'){
                             $.each(frm.doc.payment_table || [], function(i, v) {
-                                console.log(v.name,1111)
-                                frappe.model.set_value(v.doctype, v.name, "account_paid_from",data.message)
+                                frappe.model.set_value(v.doctype, v.name, "account_paid_from",data.message)  
                             })
                         }else{
                             $.each(frm.doc.payment_table || [], function(i, v) {
-                                
                                 frappe.model.set_value(v.doctype, v.name, "account_paid_to",data.message)
                             })
                         }
@@ -198,10 +202,33 @@ frappe.ui.form.on('Payment Refrences', {
 
 frappe.ui.form.on('Multi Party Entry', {
     payment_table_add:function(frm,cdn,cdt){
-        console.log('ddddd')
         var d = locals[cdn][cdt];
         console.log(d)
         frappe.model.set_value(d.doctype, d.name, "party_type",cur_frm.doc.party);
+    },
+
+    part_type:function(frm,cdn,cdt){
+        var d = locals[cdn][cdt];
+        console.log(d)
+        frappe.call(
+            {
+                method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.set_default_party_account',
+                args:{
+                    'party_type':d.part_type,
+                    'comapny':frm.doc.company,
+                    'party':frm.doc.party
+                },
+                callback:function(data){
+                   if (frm.doc.payment_type =='Pay') {
+                    frappe.model.set_value(d.doctype, d.name, "account_paid_to",data.message)
+                   }
+                   else{
+                    frappe.model.set_value(d.doctype, d.name, "account_paid_from",data.message)
+                   }
+                }
+            }
+        )
+        
     }
 })
 

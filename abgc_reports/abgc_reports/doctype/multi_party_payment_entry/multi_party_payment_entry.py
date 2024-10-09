@@ -49,6 +49,7 @@ class MultiPartyPaymentEntry(Document):
 				row.total_allocated_amount_1 = payment_entry.base_paid_amount
 				row.difference_amount = payment_entry.difference_amount
 				row.save()
+				payment_entry.submit()
 
 			frappe.db.commit()
 
@@ -82,6 +83,12 @@ def get_company_account(**kwargs):
 			return  accounts.default_account
 
 
+@frappe.whitelist(allow_guest=True)
+def set_default_party_account(**kwargs):
+	customer=frappe.get_doc(f'{kwargs.get("party")}',kwargs.get('party_type'))
+	for accounts in customer.accounts:
+		if  kwargs.get('comapny') == accounts.company:
+			return accounts.account
 
 
 
