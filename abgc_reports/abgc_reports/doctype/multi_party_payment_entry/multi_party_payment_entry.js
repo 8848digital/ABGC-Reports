@@ -241,7 +241,6 @@ frappe.ui.form.on('Multi Party Entry', {
                 },
                 callback:function(data){
                     frappe.model.set_value(d.doctype, d.name, "source_exchange_rate",data.message)
-                    
                 }
             }
         )
