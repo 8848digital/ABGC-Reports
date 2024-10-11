@@ -23,6 +23,9 @@ class MultiPartyPaymentEntry(Document):
 				payment_entry.reference_date = self.cheque__refrence_date
 				if self.party == 'Supplier':
 					payment_entry.payment_type = self.payment_type
+				
+				if self.mode_of_payment:
+					payment_entry.mode_of_payment = self.mode_of_payment
 
 				for sales in self.payment_entry_refrence:
 					if self.party == 'Customer':
