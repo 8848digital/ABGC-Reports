@@ -2,6 +2,7 @@
 	# For license information, please see license.txt
 
 import frappe
+import time
 from frappe.model.document import Document
 
 class MultiPartyPaymentEntry(Document):
@@ -42,6 +43,12 @@ class MultiPartyPaymentEntry(Document):
 							})
 
 				payment_entry.save()
+				frappe.db.commit()
+				frappe.db.set_value('Multi Party Entry', value.name, {
+					'payment_entry': payment_entry.name
+				})
+
+			
 				row = self.append('writeoff', {})
 				row.party = payment_entry.party
 				row.total_allocated_amount = payment_entry.total_allocated_amount
@@ -51,7 +58,6 @@ class MultiPartyPaymentEntry(Document):
 				row.save()
 				payment_entry.submit()
 
-			frappe.db.commit()
 
 		except Exception as e:
 			frappe.db.rollback()  

@@ -189,7 +189,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
 
 frappe.ui.form.on('Payment Refrences', {
     reference_name:function(frm,cdn,cdt){
-       
+
         var data=locals[cdn][cdt]
         var pr=frappe.db.get_doc(`${data.reference_doctype}`,`${data.reference_name}`)
         pr.then(function(value){
@@ -228,7 +228,21 @@ frappe.ui.form.on('Multi Party Entry', {
                 }
             }
         )
-        
+    },
+    paid_amount:function(frm,cdn,cdt){
+        var d = locals[cdn][cdt];
+        frappe.call(
+            {
+                method:'erpnext.setup.utils.get_exchange_rate',
+                args:{
+                    'from_currency':d.account_currency_from,
+                    'to_currency':d.account_currency_to 
+                },
+                callback:function(data){
+                    frappe.model.set_value(d.doctype, d.name, "source_exchange_rate",data.message)
+                }
+            }
+        )
     }
 })
 
