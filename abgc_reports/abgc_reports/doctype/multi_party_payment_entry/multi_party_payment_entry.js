@@ -228,7 +228,6 @@ frappe.ui.form.on('Multi Party Entry', {
                 }
             }
         )
-        
     },
     paid_amount:function(frm,cdn,cdt){
         var d = locals[cdn][cdt];
