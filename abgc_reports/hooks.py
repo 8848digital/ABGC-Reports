@@ -190,7 +190,11 @@ doc_events = {
   	},
     "FA Credit Note":{
         "validate": "abgc_reports.custom_credit_note.override.buying_controller.override_valuation"
+	},
+    "Payment Entry":{
+        "on_trash": "abgc_reports.customization.payment_entry.payment_entry.before_delete"
 	}
+
 }
 
 # Scheduled Tasks
