@@ -10,34 +10,40 @@
   "total_allocated_amount",
   "unallocated_amount",
   "total_allocated_amount_1",
-  "difference_amount"
+  "difference_amount",
+  "currency_paid_from",
+  "currency_paid_to"
  ],
  "fields": [
   {
    "fieldname": "total_allocated_amount",
-   "fieldtype": "Float",
+   "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Total Allocated Amount ",
+   "options": "currency_paid_from",
    "read_only": 1
   },
   {
    "fieldname": "unallocated_amount",
-   "fieldtype": "Float",
+   "fieldtype": "Currency",
    "in_list_view": 1,
    "label": "Unallocated Amount ",
+   "options": "currency_paid_from",
    "read_only": 1
   },
   {
    "fieldname": "difference_amount",
-   "fieldtype": "Float",
+   "fieldtype": "Currency",
    "label": "Difference Amount ",
+   "options": "currency_paid_to",
    "read_only": 1
   },
   {
    "fieldname": "total_allocated_amount_1",
-   "fieldtype": "Float",
+   "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Total Allocated Amount ",
+   "label": "Total Allocated Amoun 2t ",
+   "options": "currency_paid_to",
    "read_only": 1
   },
   {
@@ -46,12 +52,22 @@
    "in_list_view": 1,
    "label": "Party",
    "read_only": 1
+  },
+  {
+   "fieldname": "currency_paid_from",
+   "fieldtype": "Data",
+   "label": "Currency Paid From"
+  },
+  {
+   "fieldname": "currency_paid_to",
+   "fieldtype": "Data",
+   "label": "Currency Paid To"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-09-26 10:19:29.796814",
+ "modified": "2024-10-13 11:11:48.639590",
  "modified_by": "Administrator",
  "module": "Abgc Reports",
  "name": "Writoff",
