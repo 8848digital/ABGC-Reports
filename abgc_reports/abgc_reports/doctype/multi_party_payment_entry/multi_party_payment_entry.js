@@ -8,6 +8,7 @@ var account_to=''
 frappe.ui.form.on('Multi-Party Payment Entry', {
 
     onload:function(frm){
+
         $.each(frm.doc.payment_table || [], function(i, v) {
             console.log(v.name,1111)
             frappe.model.set_value(v.doctype, v.name, "party_type",frm.doc.party)
@@ -57,6 +58,22 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
         
 },
     refresh: function(frm) {
+        if (frm.doc['payment_deduction_loss'] && frm.doc['payment_deduction_loss'].length > 0) {
+            frm.fields_dict['payment_deduction_loss'].wrapper.style.display = 'block';
+        } else {
+            frm.fields_dict['payment_deduction_loss'].wrapper.style.display = 'none';
+        }
+        frm.set_df_property('set_exchange_gainloss', 'hidden', 0)
+        if (! frm.doc.writeoff === undefined) {
+            frm.doc.writeoff.forEach(function(loss){
+                if (loss.difference_amount > 0) {
+                    frm.set_df_property('set_exchange_gainloss', 'hidden', 1)
+                }else{
+                    frm.set_df_property('set_exchange_gainloss', 'hidden', 0)
+                }
+            })
+        }
+        
         frm.toggle_display("account_currency_from_to", true);
         frm.toggle_display("account_currency_to", true);
         frm.set_query("party", function () {
@@ -177,13 +194,47 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
                 };
             }
             
-
-
-
-
-
-            
         };
+    },
+    set_exchange_gainloss:function(frm){
+        frm.set_df_property('set_exchange_gainloss', 'hidden', 1)
+      
+        frm.fields_dict['payment_deduction_loss'].wrapper.style.display = 'block'; // Show the table
+        frm.refresh_field('payment_deduction_loss'); 
+        let writeoff=frm.doc.writeoff
+        let party_list=[]
+        if (frm.doc.writeoff !== undefined) {
+            frm.doc.writeoff.forEach(function(d) {
+                party_list.push(d.party);
+            });
+        }
+        writeoff.forEach(function(diff){
+            if (diff.difference_amount > 0) {
+                    frappe.call({
+                        method: "erpnext.accounts.doctype.payment_entry.payment_entry.get_company_defaults",
+                        args: {
+                            company: frm.doc.company
+                        },
+                        callback: function(r, rt) {
+                            if (party_list.includes(diff.party)) {
+                                remove_row_by_field_value(frm, 'payment_deduction_loss', 'party', diff.party);
+                            }
+
+                            let row = frm.add_child("payment_deduction_loss");
+                            row.account = r.message['exchange_gain_loss_account'];
+                            row.cost_center = r.message['cost_center'];
+                            row.amount = diff.difference_amount;
+                            row.party = diff.party;
+
+                            frm.refresh_field("payment_deduction_loss");
+                            diff.difference_amount = 0
+                            frm.refresh_field('writeoff')
+                        }
+                        
+                    })
+                }
+            }
+        )
     }
 });
 
@@ -193,14 +244,104 @@ frappe.ui.form.on('Payment Refrences', {
         var data=locals[cdn][cdt]
         var pr=frappe.db.get_doc(`${data.reference_doctype}`,`${data.reference_name}`)
         pr.then(function(value){
+            console.log(value,55555)
             frappe.model.set_value(data.doctype, data.name, "grand_total",value.grand_total)
             frappe.model.set_value(data.doctype, data.name, "outstanding",value.outstanding_amount)
-        })
-    }
+            if (frm.doc.party === 'Customer' ) {
+                frappe.model.set_value(data.doctype, data.name, "party",value.customer)
+                frappe.model.set_value(data.doctype, data.name, "amount_currency",value.currency)
 
+            }else{
+                frappe.model.set_value(data.doctype, data.name, "party",value.supplier_name)
+                frappe.model.set_value(data.doctype, data.name, "amount_currency",value.currency)
+            }
+        })
+
+    
+       
+        
+    },
+    allocated_amount: function (frm, cdn, cdt) {
+        var data = locals[cdn][cdt];
+        var party_list = [];
+        var allocated_amount = 0;
+        frm.set_df_property('set_exchange_gainloss', 'hidden', 0)
+        
+        if (! frm.doc.writeoff === undefined) {
+            frm.doc.writeoff.forEach(function(loss){
+                if (loss.difference_amount > 0) {
+                    frm.set_df_property('set_exchange_gainloss', 'hidden', 0)
+                }else{
+                    frm.set_df_property('set_exchange_gainloss', 'hidden', 1)
+                }
+            })
+        }
+        
+        frm.doc.payment_entry_refrence.forEach(function(fn) {
+            if (data.party === fn.party) {
+                allocated_amount += parseFloat(fn.allocated_amount) || 0;
+            }
+        });
+    
+        if (frm.doc.writeoff !== undefined) {
+            frm.doc.writeoff.forEach(function(d) {
+                party_list.push(d.party);
+            });
+        }
+    
+        frm.doc.payment_table.forEach(function(rate) {
+            if (data.party === rate.part_type) {
+                if (party_list.includes(data.party)) {
+                    remove_row_by_field_value(frm, 'writeoff', 'party', data.party);
+                }
+                var source_exchange_rate = parseFloat(rate.source_exchange_rate) || 1;
+                if (frm.doc.party === 'Supplier') {
+                    var total_allocated_amount = rate.paid_amount * source_exchange_rate;
+                    var difference_amount = total_allocated_amount - allocated_amount;
+                }
+                else{
+                    var total_allocated_amount = allocated_amount * source_exchange_rate;
+                    var difference_amount = total_allocated_amount - rate.recieve_amount;
+                }
+                
+                let row = frm.add_child("writeoff");
+                row.currency_paid_from = rate.account_currency_from
+                row.currency_paid_to = rate.account_currency_to
+
+                row.total_allocated_amount = allocated_amount.toFixed(2);  // Added .toFixed(2) for consistency
+                row.total_allocated_amount_1 = total_allocated_amount.toFixed(2);  // Ensure it is formatted as 2 decimal places
+                row.difference_amount = difference_amount.toFixed(2);  // Ensure it is formatted as 2 decimal places
+                row.party = data.party;
+                console.log(data.party)
+
+                frm.refresh_field('writeoff');
+            }
+        });
+    }
+    
 })
 
 frappe.ui.form.on('Multi Party Entry', {
+    account_paid_from:function(frm,cdn,cdt){
+        var data = locals[cdn][cdt];
+        console.log(data.account_paid_from)
+        var account=frappe.db.get_doc('Account',`${data.account_paid_from}`)
+        console.log(data.account_paid_from)
+        account.then(function(value){
+            frappe.model.set_value(data.doctype, data.name, "account_currency_from",value.account_currency)
+
+        })
+    },
+
+    account_paid_to:function(frm,cdn,cdt){
+        var data = locals[cdn][cdt];
+        var account=frappe.db.get_doc('Account',`${data.account_paid_to}`)
+        account.then(function(value){
+            frappe.model.set_value(data.doctype, data.name, "account_currency_to",value.account_currency)
+
+        })
+    },
+
     payment_table_add:function(frm,cdn,cdt){
         var d = locals[cdn][cdt];
         console.log(d)
@@ -245,6 +386,60 @@ frappe.ui.form.on('Multi Party Entry', {
         )
     }
 })
+
+
+
+frappe.ui.form.on('Payment Deduction Loss', {
+
+    before_payment_deduction_loss_remove:function(frm,cdn,cdt){
+        var d = locals[cdn][cdt];
+        console.log(d)
+        frm.doc.writeoff.forEach(function(add_diff){
+            if (add_diff.party === d.party ) {
+                add_diff.difference_amount = d.amount
+                frm.refresh_field('writeoff')
+            }
+        })
+    }
+
+})
+
+
+
+function remove_row_by_field_value(frm, child_table, fieldname, value_to_match) {
+    // Ensure child_table exists
+    if (!frm.doc[child_table]) {
+        console.error(`Child table ${child_table} does not exist.`);
+        return;
+    }
+
+    // Get the current data from the child table
+    let table_data = frm.doc[child_table];
+
+    // Create a new array to hold the remaining rows
+    let updated_data = [];
+
+    // Loop through the existing rows and filter out the ones to remove
+    for (let i = 0; i < table_data.length; i++) {
+        if (table_data[i][fieldname] !== value_to_match) {
+            updated_data.push(table_data[i]);
+        }
+    }
+
+    // Clear existing rows and repopulate the child table
+    frm.clear_table(child_table);
+
+    // Add back the filtered rows
+    updated_data.forEach(row => {
+        let new_row = frm.add_child(child_table);
+        Object.assign(new_row, row);
+    });
+
+    // Refresh the field to show the updated data
+    frm.refresh_field(child_table);
+    console.log(`Removed rows with ${fieldname} = ${value_to_match} if they existed.`);
+}
+
 
 
 

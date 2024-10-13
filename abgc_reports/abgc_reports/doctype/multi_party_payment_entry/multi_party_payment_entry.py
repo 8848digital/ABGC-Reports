@@ -7,6 +7,7 @@ from frappe.model.document import Document
 
 class MultiPartyPaymentEntry(Document):
 	def on_submit(self):
+		print(self.docstatus,'sttaus 1111111111111')
 		try:
 			frappe.db.savepoint("before_payment_entry_creation")
 			for value in self.payment_table:
@@ -44,22 +45,28 @@ class MultiPartyPaymentEntry(Document):
 								'reference_name': sales.reference_name,
 								'allocated_amount': sales.allocated_amount
 							})
+				
+				for write_off in self.writeoff:
+					if write_off.party == value.part_type:
+						payment_entry.total_allocated_amount = write_off.total_allocated_amount
+						payment_entry.base_total_allocated_amount =write_off.total_allocated_amount_1
+						payment_entry.difference_amount = write_off.difference_amount
+
+				if len(self.payment_deduction_loss) > 0:
+					for diff in self.payment_deduction_loss:
+						if value.part_type == diff.party:
+							payment_entry.append('deductions',{
+								"account":diff.account,
+								"cost_center":diff.cost_center,
+								"amount":diff.amount
+							})
 
 				payment_entry.save()
-				frappe.db.commit()
-				frappe.db.set_value('Multi Party Entry', value.name, {
-					'payment_entry': payment_entry.name
-				})
-
-			
-				row = self.append('writeoff', {})
-				row.party = payment_entry.party
-				row.total_allocated_amount = payment_entry.total_allocated_amount
-				row.unallocated_amount = payment_entry.unallocated_amount
-				row.total_allocated_amount_1 = payment_entry.base_paid_amount
-				row.difference_amount = payment_entry.difference_amount
-				row.save()
 				payment_entry.submit()
+				
+				frappe.db.commit()
+				value.payment_entry = payment_entry.name
+				
 
 
 		except Exception as e:
@@ -70,17 +77,28 @@ class MultiPartyPaymentEntry(Document):
 
 
 	def validate(self):
-		doc=frappe.db.get_all('Sales Invoice',fields=['customer','company','conversion_rate'])
-		for value in self.payment_table:
-			for sales in doc:
-				if sales['customer'] == value.part_type and sales['company'] == self.company:
-					value.source_exchange_rate =  sales.conversion_rate
+		if self.docstatus == 0:
+			doc=frappe.db.get_all('Sales Invoice',fields=['customer','company','conversion_rate'])
+			for value in self.payment_table:
+				for sales in doc:
+					if sales['customer'] == value.part_type and sales['company'] == self.company:
+						value.source_exchange_rate =  sales.conversion_rate
 
-		for refrence in self.payment_entry_refrence:
-			if refrence.allocated_amount > refrence.outstanding:
-				frappe.throw('The allocated amount must not be greater than the outstanding amount' )
+			for refrence in self.payment_entry_refrence:
+				if refrence.allocated_amount > refrence.outstanding:
+					frappe.throw('The allocated amount must not be greater than the outstanding amount' )
 			
-		
+			
+			
+			doc=frappe.db.get_all('Sales Invoice',fields=['customer','company','conversion_rate'])
+			for value in self.payment_table:
+				for sales in doc:
+					if sales['customer'] == value.part_type and sales['company'] == self.company:
+						value.source_exchange_rate =  sales.conversion_rate
+
+			for refrence in self.payment_entry_refrence:
+				if refrence.allocated_amount > refrence.outstanding:
+					frappe.throw('The allocated amount must not be greater than the outstanding amount' )
 
 
 @frappe.whitelist(allow_guest=True)
