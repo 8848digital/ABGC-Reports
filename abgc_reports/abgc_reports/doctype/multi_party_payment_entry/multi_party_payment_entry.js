@@ -337,7 +337,11 @@ frappe.ui.form.on('Multi Party Entry', {
     },
 
     payment_table_add:function(frm,cdn,cdt){
+
+
         var v=locals[cdn][cdt]
+        frappe.model.set_value(v.doctype, v.name, "party_type",frm.doc.party)
+
         if (frm.doc.mode_of_payment) {
             if (frm.doc.company != undefined){
                 frappe.call(
