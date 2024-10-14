@@ -10,7 +10,6 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
     onload:function(frm){
 
         $.each(frm.doc.payment_table || [], function(i, v) {
-            console.log(v.name,1111)
             frappe.model.set_value(v.doctype, v.name, "party_type",frm.doc.party)
         })
     },
@@ -244,7 +243,6 @@ frappe.ui.form.on('Payment Refrences', {
         var data=locals[cdn][cdt]
         var pr=frappe.db.get_doc(`${data.reference_doctype}`,`${data.reference_name}`)
         pr.then(function(value){
-            console.log(value,55555)
             frappe.model.set_value(data.doctype, data.name, "grand_total",value.grand_total)
             frappe.model.set_value(data.doctype, data.name, "outstanding",value.outstanding_amount)
             if (frm.doc.party === 'Customer' ) {
@@ -340,26 +338,28 @@ frappe.ui.form.on('Multi Party Entry', {
 
     payment_table_add:function(frm,cdn,cdt){
         var v=locals[cdn][cdt]
-        if (frm.doc.company != undefined){
-            frappe.call(
-                {
-                    method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.get_company_account',
-                    args:{
-                        'mode_of_payment':frm.doc.mode_of_payment,
-                        'comapny':frm.doc.company
-                    },
-                    callback:function(data){
-                        console.log(v,'ffffff')
-                        if(frm.doc.payment_type =='Pay'){
-                            frappe.model.set_value(v.doctype, v.name, "account_paid_from",data.message)  
-                        }else{
-                            frappe.model.set_value(v.doctype, v.name, "account_paid_to",data.message)
+        if (frm.doc.mode_of_payment) {
+            if (frm.doc.company != undefined){
+                frappe.call(
+                    {
+                        method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.get_company_account',
+                        args:{
+                            'mode_of_payment':frm.doc.mode_of_payment,
+                            'comapny':frm.doc.company
+                        },
+                        callback:function(data){
+                            if(frm.doc.payment_type =='Pay'){
+                                frappe.model.set_value(v.doctype, v.name, "account_paid_from",data.message)  
+                            }else{
+                                frappe.model.set_value(v.doctype, v.name, "account_paid_to",data.message)
+                            }
+                            frm.refresh_field('payment_table')
                         }
-                        frm.refresh_field('payment_table')
                     }
-                }
-            )
+                )
+            }
         }
+        
 
     },
 
@@ -402,23 +402,43 @@ frappe.ui.form.on('Multi Party Entry', {
             }
         )
     },
-    account_currency_from:function(frm,cdn,cdt){
-        console.log('ddddd')
-        var d=locals[cdn][cdt]
-        currency=frappe.db.get_doc('Currency',d.account_currency_from)
-        .then(function(value){
-            frm.fields_dict['payment_table'].$wrapper.find("label:contains('Paid amount')").after(`<label>(${value.symbol})</label>`);
-        })
+    account_currency_from: function(frm, cdn, cdt) {
+        console.log('ddddd');
+        var d = locals[cdn][cdt];
+    
+        // Get the Currency document for the selected account_currency_from
+        frappe.db.get_doc('Currency', d.account_currency_from)
+        .then(function(value) {
+            // Find the label for 'Paid amount'
+            var paidAmountLabel = frm.fields_dict['payment_table'].$wrapper.find("label:contains('Paid amount')");
+            
+            // Remove any existing currency symbol after the 'Paid amount' label
+            paidAmountLabel.next('.currency-symbol').remove();
+            
+            // Append the latest currency symbol
+            paidAmountLabel.after(`<label class="currency-symbol">(${value.symbol})</label>`);
+        });
         frm.refresh_field('payment_table');   
     },
-    account_currency_to:function(frm,cdn,cdt){
-        var d=locals[cdn][cdt]
-        currency=frappe.db.get_doc('Currency',d.account_currency_to)
-        .then(function(value){
-            frm.fields_dict['payment_table'].$wrapper.find("label:contains('Recieve Amount')").after(`<label>(${value.symbol})</label>`);
-        })
+    
+    account_currency_to: function(frm, cdn, cdt) {
+        var d = locals[cdn][cdt];
+    
+        // Get the Currency document for the selected account_currency_to
+        frappe.db.get_doc('Currency', d.account_currency_to)
+        .then(function(value) {
+            // Find the label for 'Recieve Amount'
+            var receiveAmountLabel = frm.fields_dict['payment_table'].$wrapper.find("label:contains('Recieve Amount')");
+            
+            // Remove any existing currency symbol after the 'Recieve Amount' label
+            receiveAmountLabel.next('.currency-symbol').remove();
+            
+            // Append the latest currency symbol
+            receiveAmountLabel.after(`<label class="currency-symbol">(${value.symbol})</label>`);
+        });
         frm.refresh_field('payment_table');   
     },
+    
 
 })
 
