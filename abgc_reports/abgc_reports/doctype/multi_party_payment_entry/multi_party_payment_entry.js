@@ -401,7 +401,25 @@ frappe.ui.form.on('Multi Party Entry', {
                 }
             }
         )
-    }
+    },
+    account_currency_from:function(frm,cdn,cdt){
+        console.log('ddddd')
+        var d=locals[cdn][cdt]
+        currency=frappe.db.get_doc('Currency',d.account_currency_from)
+        .then(function(value){
+            frm.fields_dict['payment_table'].$wrapper.find("label:contains('Paid amount')").after(`<label>(${value.symbol})</label>`);
+        })
+        frm.refresh_field('payment_table');   
+    },
+    account_currency_to:function(frm,cdn,cdt){
+        var d=locals[cdn][cdt]
+        currency=frappe.db.get_doc('Currency',d.account_currency_to)
+        .then(function(value){
+            frm.fields_dict['payment_table'].$wrapper.find("label:contains('Recieve Amount')").after(`<label>(${value.symbol})</label>`);
+        })
+        frm.refresh_field('payment_table');   
+    },
+
 })
 
 
