@@ -403,19 +403,12 @@ frappe.ui.form.on('Multi Party Entry', {
         )
     },
     account_currency_from: function(frm, cdn, cdt) {
-        console.log('ddddd');
+
         var d = locals[cdn][cdt];
-    
-        // Get the Currency document for the selected account_currency_from
         frappe.db.get_doc('Currency', d.account_currency_from)
         .then(function(value) {
-            // Find the label for 'Paid amount'
             var paidAmountLabel = frm.fields_dict['payment_table'].$wrapper.find("label:contains('Paid amount')");
-            
-            // Remove any existing currency symbol after the 'Paid amount' label
             paidAmountLabel.next('.currency-symbol').remove();
-            
-            // Append the latest currency symbol
             paidAmountLabel.after(`<label class="currency-symbol">(${value.symbol})</label>`);
         });
         frm.refresh_field('payment_table');   
@@ -423,17 +416,10 @@ frappe.ui.form.on('Multi Party Entry', {
     
     account_currency_to: function(frm, cdn, cdt) {
         var d = locals[cdn][cdt];
-    
-        // Get the Currency document for the selected account_currency_to
         frappe.db.get_doc('Currency', d.account_currency_to)
         .then(function(value) {
-            // Find the label for 'Recieve Amount'
             var receiveAmountLabel = frm.fields_dict['payment_table'].$wrapper.find("label:contains('Recieve Amount')");
-            
-            // Remove any existing currency symbol after the 'Recieve Amount' label
             receiveAmountLabel.next('.currency-symbol').remove();
-            
-            // Append the latest currency symbol
             receiveAmountLabel.after(`<label class="currency-symbol">(${value.symbol})</label>`);
         });
         frm.refresh_field('payment_table');   
