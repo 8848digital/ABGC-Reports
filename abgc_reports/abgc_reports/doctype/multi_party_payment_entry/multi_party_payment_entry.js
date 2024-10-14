@@ -10,6 +10,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
     onload:function(frm){
 
         $.each(frm.doc.payment_table || [], function(i, v) {
+            console.log(v.name,1111)
             frappe.model.set_value(v.doctype, v.name, "party_type",frm.doc.party)
         })
     },
@@ -208,7 +209,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
             });
         }
         writeoff.forEach(function(diff){
-            if (diff.difference_amount > 0) {
+            if (diff.difference_amount > 0 || diff.difference_amount < 0) {
                     frappe.call({
                         method: "erpnext.accounts.doctype.payment_entry.payment_entry.get_company_defaults",
                         args: {
@@ -243,6 +244,7 @@ frappe.ui.form.on('Payment Refrences', {
         var data=locals[cdn][cdt]
         var pr=frappe.db.get_doc(`${data.reference_doctype}`,`${data.reference_name}`)
         pr.then(function(value){
+            console.log(value,55555)
             frappe.model.set_value(data.doctype, data.name, "grand_total",value.grand_total)
             frappe.model.set_value(data.doctype, data.name, "outstanding",value.outstanding_amount)
             if (frm.doc.party === 'Customer' ) {
@@ -253,7 +255,11 @@ frappe.ui.form.on('Payment Refrences', {
                 frappe.model.set_value(data.doctype, data.name, "party",value.supplier_name)
                 frappe.model.set_value(data.doctype, data.name, "amount_currency",value.currency)
             }
-        }) 
+        })
+
+    
+       
+        
     },
     allocated_amount: function (frm, cdn, cdt) {
         var data = locals[cdn][cdt];
@@ -302,9 +308,9 @@ frappe.ui.form.on('Payment Refrences', {
                 row.currency_paid_from = rate.account_currency_from
                 row.currency_paid_to = rate.account_currency_to
 
-                row.total_allocated_amount = allocated_amount.toFixed(2);  // Added .toFixed(2) for consistency
-                row.total_allocated_amount_1 = total_allocated_amount.toFixed(2);  // Ensure it is formatted as 2 decimal places
-                row.difference_amount = difference_amount.toFixed(2);  // Ensure it is formatted as 2 decimal places
+                row.total_allocated_amount = allocated_amount.toFixed(2); 
+                row.total_allocated_amount_1 = total_allocated_amount.toFixed(2); 
+                row.difference_amount = difference_amount.toFixed(2);
                 row.party = data.party;
                 console.log(data.party)
 
@@ -337,34 +343,9 @@ frappe.ui.form.on('Multi Party Entry', {
     },
 
     payment_table_add:function(frm,cdn,cdt){
-
-
-        var v=locals[cdn][cdt]
-        frappe.model.set_value(v.doctype, v.name, "party_type",frm.doc.party)
-
-        if (frm.doc.mode_of_payment) {
-            if (frm.doc.company != undefined){
-                frappe.call(
-                    {
-                        method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.get_company_account',
-                        args:{
-                            'mode_of_payment':frm.doc.mode_of_payment,
-                            'comapny':frm.doc.company
-                        },
-                        callback:function(data){
-                            if(frm.doc.payment_type =='Pay'){
-                                frappe.model.set_value(v.doctype, v.name, "account_paid_from",data.message)  
-                            }else{
-                                frappe.model.set_value(v.doctype, v.name, "account_paid_to",data.message)
-                            }
-                            frm.refresh_field('payment_table')
-                        }
-                    }
-                )
-            }
-        }
-        
-
+        var d = locals[cdn][cdt];
+        console.log(d)
+        frappe.model.set_value(d.doctype, d.name, "party_type",cur_frm.doc.party);
     },
 
     part_type:function(frm,cdn,cdt){
@@ -372,11 +353,11 @@ frappe.ui.form.on('Multi Party Entry', {
         console.log(d)
         frappe.call(
             {
-                method:'erpnext.accounts.party.get_party_account',
+                method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.set_default_party_account',
                 args:{
-                    'party_type':frm.doc.party,
-                    'party':d.part_type,
-                    'company':frm.doc.company
+                    'party_type':d.part_type,
+                    'comapny':frm.doc.company,
+                    'party':frm.doc.party
                 },
                 callback:function(data){
                    if (frm.doc.payment_type =='Pay') {
@@ -391,45 +372,19 @@ frappe.ui.form.on('Multi Party Entry', {
     },
     paid_amount:function(frm,cdn,cdt){
         var d = locals[cdn][cdt];
-
         frappe.call(
             {
-                method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.get_exchange_rate',
+                method:'erpnext.setup.utils.get_exchange_rate',
                 args:{
                     'from_currency':d.account_currency_from,
-                    'to_currency':d.account_currency_to,
-                    'party_type':frm.doc.party
+                    'to_currency':d.account_currency_to 
                 },
                 callback:function(data){
                     frappe.model.set_value(d.doctype, d.name, "source_exchange_rate",data.message)
                 }
             }
         )
-    },
-    account_currency_from: function(frm, cdn, cdt) {
-
-        var d = locals[cdn][cdt];
-        frappe.db.get_doc('Currency', d.account_currency_from)
-        .then(function(value) {
-            var paidAmountLabel = frm.fields_dict['payment_table'].$wrapper.find("label:contains('Paid amount')");
-            paidAmountLabel.next('.currency-symbol').remove();
-            paidAmountLabel.after(`<label class="currency-symbol">(${value.symbol})</label>`);
-        });
-        frm.refresh_field('payment_table');   
-    },
-    
-    account_currency_to: function(frm, cdn, cdt) {
-        var d = locals[cdn][cdt];
-        frappe.db.get_doc('Currency', d.account_currency_to)
-        .then(function(value) {
-            var receiveAmountLabel = frm.fields_dict['payment_table'].$wrapper.find("label:contains('Recieve Amount')");
-            receiveAmountLabel.next('.currency-symbol').remove();
-            receiveAmountLabel.after(`<label class="currency-symbol">(${value.symbol})</label>`);
-        });
-        frm.refresh_field('payment_table');   
-    },
-    
-
+    }
 })
 
 
@@ -452,35 +407,29 @@ frappe.ui.form.on('Payment Deduction Loss', {
 
 
 function remove_row_by_field_value(frm, child_table, fieldname, value_to_match) {
-    // Ensure child_table exists
+
     if (!frm.doc[child_table]) {
         console.error(`Child table ${child_table} does not exist.`);
         return;
     }
 
-    // Get the current data from the child table
     let table_data = frm.doc[child_table];
-
-    // Create a new array to hold the remaining rows
     let updated_data = [];
 
-    // Loop through the existing rows and filter out the ones to remove
     for (let i = 0; i < table_data.length; i++) {
         if (table_data[i][fieldname] !== value_to_match) {
             updated_data.push(table_data[i]);
         }
     }
 
-    // Clear existing rows and repopulate the child table
-    frm.clear_table(child_table);
 
-    // Add back the filtered rows
+    frm.clear_table(child_table);
     updated_data.forEach(row => {
         let new_row = frm.add_child(child_table);
         Object.assign(new_row, row);
     });
 
-    // Refresh the field to show the updated data
+    
     frm.refresh_field(child_table);
     console.log(`Removed rows with ${fieldname} = ${value_to_match} if they existed.`);
 }

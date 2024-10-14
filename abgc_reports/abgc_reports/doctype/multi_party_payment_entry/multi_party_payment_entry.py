@@ -3,6 +3,7 @@
 
 import frappe
 import time
+from frappe.utils import cint, comma_or, flt, getdate, nowdate
 from frappe.model.document import Document
 
 class MultiPartyPaymentEntry(Document):
@@ -24,16 +25,19 @@ class MultiPartyPaymentEntry(Document):
 				payment_entry.paid_from_account_currency =  value.account_currency_from
 				payment_entry.paid_to_account_currency = value.account_currency_to
 				
-				payment_entry.base_paid_amount = value.paid_amount * value.source_exchange_rate
+				
 				payment_entry.source_exchange_rate = value.source_exchange_rate
 				payment_entry.target_exchange_rate =value.source_exchange_rate
-				payment_entry.base_received_amount = value.recieve_amount
+				if self.party == 'Customer':
+					payment_entry.base_received_amount = value.recieve_amount
+					payment_entry.base_paid_amount = value.paid_amount * value.source_exchange_rate
 		
 				if self.party == 'Supplier':
+					payment_entry.base_paid_amount = value.paid_amount
 					payment_entry.payment_type = self.payment_type
 					payment_entry.target_exchange_rate =value.source_exchange_rate
 					payment_entry.source_exchange_rate = value.source_exchange_rate
-					payment_entry.base_received_amount = value.recieve_amount
+					payment_entry.base_received_amount = (flt(value.source_exchange_rate) * flt(value.recieve_amount)) 
 				
 				if self.mode_of_payment:
 					payment_entry.mode_of_payment = self.mode_of_payment
@@ -63,14 +67,32 @@ class MultiPartyPaymentEntry(Document):
 				
 				for write_off in self.writeoff:
 					if write_off.party == value.part_type:
+						base_unallocated_amount = flt(write_off.unallocated_amount) * (
+						flt(value.source_exchange_rate))
+
+						base_party_amount = flt(write_off.total_allocated_amount) + flt(base_unallocated_amount)
+
+						print(base_party_amount,'base_part_amount+fake')
+						if self.payment_type == "Receive": 
+							payment_entry.difference_amount = base_party_amount - (flt(value.source_exchange_rate) * flt(value.recieve_amount)) 
+						elif self.payment_type == "Pay":
+							payment_entry.difference_amount = (flt(value.paid_amount) * flt(value.source_exchange_rate)) - base_party_amount
+						
+						
+						total_deductions = sum(flt(d.amount) for d in self.get("payment_deduction_loss") if write_off.party == d.party)
+
+						print(total_deductions,'base_part_total_deduction+fake')
+
 						payment_entry.total_allocated_amount = write_off.total_allocated_amount
 						payment_entry.base_total_allocated_amount =write_off.total_allocated_amount_1
 						payment_entry.difference_amount = write_off.difference_amount
 
+						payment_entry.difference_amount = flt(payment_entry.difference_amount - total_deductions, payment_entry.precision("difference_amount"))
+
 
 				if len(self.payment_deduction_loss) > 0:
 					for diff in self.payment_deduction_loss:
-						amount=frappe.utils.flt(diff.amount)*-1
+						
 						if self.party == 'Customer':
 							print('111111')
 							if value.part_type == diff.party:
@@ -80,12 +102,12 @@ class MultiPartyPaymentEntry(Document):
 									"amount": diff.amount
 								})
 						else:
-							print('2222')
+							
 							if value.part_type == diff.party:
 								payment_entry.append('deductions',{
 									"account":diff.account,
 									"cost_center":diff.cost_center,
-									"amount": amount
+									"amount":  diff.amount
 								})
 
 				payment_entry.save()
