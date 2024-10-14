@@ -255,11 +255,7 @@ frappe.ui.form.on('Payment Refrences', {
                 frappe.model.set_value(data.doctype, data.name, "party",value.supplier_name)
                 frappe.model.set_value(data.doctype, data.name, "amount_currency",value.currency)
             }
-        })
-
-    
-       
-        
+        }) 
     },
     allocated_amount: function (frm, cdn, cdt) {
         var data = locals[cdn][cdt];
@@ -343,9 +339,28 @@ frappe.ui.form.on('Multi Party Entry', {
     },
 
     payment_table_add:function(frm,cdn,cdt){
-        var d = locals[cdn][cdt];
-        console.log(d)
-        frappe.model.set_value(d.doctype, d.name, "party_type",cur_frm.doc.party);
+        var v=locals[cdn][cdt]
+        if (frm.doc.company != undefined){
+            frappe.call(
+                {
+                    method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.get_company_account',
+                    args:{
+                        'mode_of_payment':frm.doc.mode_of_payment,
+                        'comapny':frm.doc.company
+                    },
+                    callback:function(data){
+                        console.log(v,'ffffff')
+                        if(frm.doc.payment_type =='Pay'){
+                            frappe.model.set_value(v.doctype, v.name, "account_paid_from",data.message)  
+                        }else{
+                            frappe.model.set_value(v.doctype, v.name, "account_paid_to",data.message)
+                        }
+                        frm.refresh_field('payment_table')
+                    }
+                }
+            )
+        }
+
     },
 
     part_type:function(frm,cdn,cdt){
@@ -353,11 +368,11 @@ frappe.ui.form.on('Multi Party Entry', {
         console.log(d)
         frappe.call(
             {
-                method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.set_default_party_account',
+                method:'erpnext.accounts.party.get_party_account',
                 args:{
-                    'party_type':d.part_type,
-                    'comapny':frm.doc.company,
-                    'party':frm.doc.party
+                    'party_type':frm.doc.party,
+                    'party':d.part_type,
+                    'company':frm.doc.company
                 },
                 callback:function(data){
                    if (frm.doc.payment_type =='Pay') {
@@ -372,12 +387,14 @@ frappe.ui.form.on('Multi Party Entry', {
     },
     paid_amount:function(frm,cdn,cdt){
         var d = locals[cdn][cdt];
+
         frappe.call(
             {
-                method:'erpnext.setup.utils.get_exchange_rate',
+                method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.get_exchange_rate',
                 args:{
                     'from_currency':d.account_currency_from,
-                    'to_currency':d.account_currency_to 
+                    'to_currency':d.account_currency_to,
+                    'party_type':frm.doc.party
                 },
                 callback:function(data){
                     frappe.model.set_value(d.doctype, d.name, "source_exchange_rate",data.message)
