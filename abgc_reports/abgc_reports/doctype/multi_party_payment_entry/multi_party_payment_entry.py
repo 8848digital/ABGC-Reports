@@ -21,8 +21,19 @@ class MultiPartyPaymentEntry(Document):
 				payment_entry.received_amount = value.paid_amount
 				payment_entry.reference_no = self.cheque__refrence_no
 				payment_entry.reference_date = self.cheque__refrence_date
+				payment_entry.paid_from_account_currency =  value.account_currency_from
+				payment_entry.paid_to_account_currency = value.account_currency_to
+				
+				payment_entry.base_paid_amount = value.paid_amount * value.source_exchange_rate
+				payment_entry.source_exchange_rate = value.source_exchange_rate
+				payment_entry.target_exchange_rate =value.source_exchange_rate
+				payment_entry.base_received_amount = value.recieve_amount
+		
 				if self.party == 'Supplier':
 					payment_entry.payment_type = self.payment_type
+					payment_entry.target_exchange_rate =value.source_exchange_rate
+					payment_entry.source_exchange_rate = value.source_exchange_rate
+					payment_entry.base_received_amount = value.recieve_amount
 				
 				if self.mode_of_payment:
 					payment_entry.mode_of_payment = self.mode_of_payment
@@ -34,7 +45,9 @@ class MultiPartyPaymentEntry(Document):
 							payment_entry.append('references', {
 								'reference_doctype': 'Sales Invoice',
 								'reference_name': sales.reference_name,
-								'allocated_amount': sales.allocated_amount
+								'allocated_amount': sales.allocated_amount,
+								'total_amount':sales.grand_total,
+								'outstanding_amount':sales.outstanding
 							})
 					else:
 						pi = frappe.get_doc('Purchase Invoice', sales.reference_name)
@@ -42,7 +55,10 @@ class MultiPartyPaymentEntry(Document):
 							payment_entry.append('references', {
 								'reference_doctype': 'Purchase Invoice',
 								'reference_name': sales.reference_name,
-								'allocated_amount': sales.allocated_amount
+								'allocated_amount': sales.allocated_amount,
+								'total_amount':sales.grand_total,
+								'outstanding_amount':sales.outstanding
+
 							})
 				
 				for write_off in self.writeoff:
@@ -51,17 +67,32 @@ class MultiPartyPaymentEntry(Document):
 						payment_entry.base_total_allocated_amount =write_off.total_allocated_amount_1
 						payment_entry.difference_amount = write_off.difference_amount
 
+
 				if len(self.payment_deduction_loss) > 0:
 					for diff in self.payment_deduction_loss:
-						if value.part_type == diff.party:
-							payment_entry.append('deductions',{
-								"account":diff.account,
-								"cost_center":diff.cost_center,
-								"amount":diff.amount
-							})
+						amount=frappe.utils.flt(diff.amount)*-1
+						if self.party == 'Customer':
+							print('111111')
+							if value.part_type == diff.party:
+								payment_entry.append('deductions',{
+									"account":diff.account,
+									"cost_center":diff.cost_center,
+									"amount": diff.amount
+								})
+						else:
+							print('2222')
+							if value.part_type == diff.party:
+								payment_entry.append('deductions',{
+									"account":diff.account,
+									"cost_center":diff.cost_center,
+									"amount": amount
+								})
 
+
+				print(payment_entry.as_dict())
+				payment_entry.flags.ignore_validate = True
 				payment_entry.save()
-				payment_entry.submit()
+				# payment_entry.submit()
 				frappe.db.set_value('Multi Party Entry',{"parent":self.name},{"payment_entry":payment_entry.name})
 				frappe.db.commit()
 				
@@ -112,6 +143,21 @@ def set_default_party_account(**kwargs):
 	for accounts in customer.accounts:
 		if  kwargs.get('comapny') == accounts.company:
 			return accounts.account
+		
+
+
+@frappe.whitelist(allow_guest=True)
+def get_exchange_rate(**kwargs):
+	print(kwargs.get(''))
+	if kwargs.get('party_type') == 'Customer':
+		exchange_rate=frappe.db.get_all('Currency Exchange',filters={'from_currency': kwargs.get('from_currency'),'to_currency': kwargs.get('to_currency')},fields=['exchange_rate'])
+		return exchange_rate[0].exchange_rate
+	else:
+		exchange_rate=frappe.db.get_all('Currency Exchange',filters={'from_currency': kwargs.get('to_currency'),'to_currency': kwargs.get('from_currency')},fields=['exchange_rate'])
+		return exchange_rate[0].exchange_rate
+
+	
+
 
 
 
