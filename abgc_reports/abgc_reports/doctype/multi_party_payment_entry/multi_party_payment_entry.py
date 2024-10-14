@@ -7,7 +7,6 @@ from frappe.model.document import Document
 
 class MultiPartyPaymentEntry(Document):
 	def on_submit(self):
-		print(self.docstatus,'sttaus 1111111111111')
 		try:
 			frappe.db.savepoint("before_payment_entry_creation")
 			for value in self.payment_table:
@@ -63,12 +62,9 @@ class MultiPartyPaymentEntry(Document):
 
 				payment_entry.save()
 				payment_entry.submit()
-				
+				frappe.db.set_value('Multi Party Entry',{"parent":self.name},{"payment_entry":payment_entry.name})
 				frappe.db.commit()
-				value.payment_entry = payment_entry.name
 				
-
-
 		except Exception as e:
 			frappe.db.rollback()  
 			frappe.msgprint("Error: {0}".format(e))
