@@ -88,11 +88,8 @@ class MultiPartyPaymentEntry(Document):
 									"amount": amount
 								})
 
-
-				print(payment_entry.as_dict())
-				payment_entry.flags.ignore_validate = True
 				payment_entry.save()
-				# payment_entry.submit()
+				payment_entry.submit()
 				frappe.db.set_value('Multi Party Entry',{"parent":self.name},{"payment_entry":payment_entry.name})
 				frappe.db.commit()
 				
