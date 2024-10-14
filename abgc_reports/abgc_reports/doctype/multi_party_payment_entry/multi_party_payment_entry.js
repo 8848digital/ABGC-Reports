@@ -208,7 +208,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
             });
         }
         writeoff.forEach(function(diff){
-            if (diff.difference_amount > 0) {
+            if (diff.difference_amount > 0 || diff.difference_amount < 0) {
                     frappe.call({
                         method: "erpnext.accounts.doctype.payment_entry.payment_entry.get_company_defaults",
                         args: {
@@ -290,13 +290,14 @@ frappe.ui.form.on('Payment Refrences', {
                 }
                 var source_exchange_rate = parseFloat(rate.source_exchange_rate) || 1;
                 if (frm.doc.party === 'Supplier') {
-                    var total_allocated_amount = rate.paid_amount * source_exchange_rate;
+                    var total_allocated_amount = allocated_amount * source_exchange_rate;
                     var difference_amount = total_allocated_amount - allocated_amount;
                 }
                 else{
                     var total_allocated_amount = allocated_amount * source_exchange_rate;
                     var difference_amount = total_allocated_amount - rate.recieve_amount;
                 }
+                
                 
                 let row = frm.add_child("writeoff");
                 row.currency_paid_from = rate.account_currency_from
