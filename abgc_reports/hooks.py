@@ -192,7 +192,7 @@ doc_events = {
         "validate": "abgc_reports.custom_credit_note.override.buying_controller.override_valuation"
 	},
     "Payment Entry":{
-        "on_trash": "abgc_reports.customization.payment_entry.payment_entry.before_delete"
+        "on_cancel": "abgc_reports.customization.payment_entry.payment_entry.before_delete"
 	}
 
 }
