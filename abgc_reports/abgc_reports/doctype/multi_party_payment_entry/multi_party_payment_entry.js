@@ -218,13 +218,11 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
                             if (party_list.includes(diff.party)) {
                                 remove_row_by_field_value(frm, 'payment_deduction_loss', 'party', diff.party);
                             }
-
                             let row = frm.add_child("payment_deduction_loss");
                             row.account = r.message['exchange_gain_loss_account'];
                             row.cost_center = r.message['cost_center'];
                             row.amount = diff.difference_amount;
                             row.party = diff.party;
-
                             frm.refresh_field("payment_deduction_loss");
                             diff.difference_amount = 0
                             frm.refresh_field('writeoff')
@@ -291,24 +289,23 @@ frappe.ui.form.on('Payment Refrences', {
                 var source_exchange_rate = parseFloat(rate.source_exchange_rate) || 1;
                 if (frm.doc.party === 'Supplier') {
                     var total_allocated_amount = allocated_amount * source_exchange_rate;
-                    var difference_amount = total_allocated_amount - allocated_amount;
+                    var unallocated_amount = (rate.paid_amount  -  total_allocated_amount) / source_exchange_rate;
+                    var  difference_amount = unallocated_amount * source_exchange_rate;
                 }
                 else{
                     var total_allocated_amount = allocated_amount * source_exchange_rate;
-                    var difference_amount = total_allocated_amount - rate.recieve_amount;
+                    var unallocated_amount = (rate.received_amount - total_allocated_amount) / frm.doc.source_exchange_rate;
+                    var difference_amount = unallocated_amount * source_exchange_rate
                 }
-                
                 
                 let row = frm.add_child("writeoff");
                 row.currency_paid_from = rate.account_currency_from
                 row.currency_paid_to = rate.account_currency_to
-
-                row.total_allocated_amount = allocated_amount.toFixed(2);  // Added .toFixed(2) for consistency
-                row.total_allocated_amount_1 = total_allocated_amount.toFixed(2);  // Ensure it is formatted as 2 decimal places
-                row.difference_amount = difference_amount.toFixed(2);  // Ensure it is formatted as 2 decimal places
+                row.total_allocated_amount = allocated_amount.toFixed(2);
+                row.total_allocated_amount_1 = total_allocated_amount.toFixed(2); 
+                row.difference_amount = difference_amount.toFixed(2);  
                 row.party = data.party;
                 console.log(data.party)
-
                 frm.refresh_field('writeoff');
             }
         });
@@ -324,7 +321,6 @@ frappe.ui.form.on('Multi Party Entry', {
         console.log(data.account_paid_from)
         account.then(function(value){
             frappe.model.set_value(data.doctype, data.name, "account_currency_from",value.account_currency)
-
         })
     },
 
@@ -333,12 +329,10 @@ frappe.ui.form.on('Multi Party Entry', {
         var account=frappe.db.get_doc('Account',`${data.account_paid_to}`)
         account.then(function(value){
             frappe.model.set_value(data.doctype, data.name, "account_currency_to",value.account_currency)
-
         })
     },
 
     payment_table_add:function(frm,cdn,cdt){
-
 
         var v=locals[cdn][cdt]
         frappe.model.set_value(v.doctype, v.name, "party_type",frm.doc.party)
@@ -392,7 +386,10 @@ frappe.ui.form.on('Multi Party Entry', {
     },
     paid_amount:function(frm,cdn,cdt){
         var d = locals[cdn][cdt];
-
+        if (d.account_currency_from == d.account_currency_to) {
+            frappe.model.set_value(d.doctype, d.name, "recieve_amount",d.paid_amount) 
+        }
+       
         frappe.call(
             {
                 method:'abgc_reports.abgc_reports.doctype.multi_party_payment_entry.multi_party_payment_entry.get_exchange_rate',
