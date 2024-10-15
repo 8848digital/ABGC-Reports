@@ -42,7 +42,7 @@
    "fieldname": "total_allocated_amount_1",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Total Allocated Amoun 2t ",
+   "label": "Total Allocated Amoun ",
    "options": "currency_paid_to",
    "read_only": 1
   },
@@ -67,7 +67,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-13 11:11:48.639590",
+ "modified": "2024-10-15 23:29:17.768744",
  "modified_by": "Administrator",
  "module": "Abgc Reports",
  "name": "Writoff",

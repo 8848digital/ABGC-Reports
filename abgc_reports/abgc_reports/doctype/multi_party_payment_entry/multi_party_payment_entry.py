@@ -19,7 +19,7 @@ class MultiPartyPaymentEntry(Document):
 				payment_entry.paid_amount = value.paid_amount
 				payment_entry.paid_from = value.account_paid_from
 				payment_entry.paid_to = value.account_paid_to
-				payment_entry.received_amount = value.paid_amount
+				payment_entry.received_amount = value.recieve_amount
 				payment_entry.reference_no = self.cheque__refrence_no
 				payment_entry.reference_date = self.cheque__refrence_date
 				payment_entry.paid_from_account_currency =  value.account_currency_from
@@ -68,24 +68,26 @@ class MultiPartyPaymentEntry(Document):
 				
 				for write_off in self.writeoff:
 					if write_off.party == value.part_type:
-						base_unallocated_amount = flt(write_off.unallocated_amount) * (
-						flt(value.source_exchange_rate))
+						# base_unallocated_amount = flt(write_off.unallocated_amount) * (
+						# flt(value.source_exchange_rate))
 
-						base_party_amount = flt(write_off.total_allocated_amount) + flt(base_unallocated_amount)
-						print(base_party_amount,'base_part_amount+fake')
-						if self.payment_type == "Receive": 
-							payment_entry.difference_amount = base_party_amount - (flt(value.source_exchange_rate) * flt(value.recieve_amount)) 
-						elif self.payment_type == "Pay":
-							payment_entry.difference_amount = flt(value.paid_amount) - base_party_amount
+						# base_party_amount = flt(write_off.total_allocated_amount) + flt(base_unallocated_amount)
+						# print(base_party_amount,'base_part_amount+fake')
+						# if self.payment_type == "Receive": 
+						# 	payment_entry.difference_amount = base_party_amount - (flt(value.source_exchange_rate) * flt(value.recieve_amount)) 
+						# elif self.payment_type == "Pay":
+						# 	payment_entry.difference_amount = flt(value.paid_amount) - base_party_amount
 						
 						
-						total_deductions = sum(flt(d.amount) for d in self.get("payment_deduction_loss") if write_off.party == d.party)
+						# total_deductions = sum(flt(d.amount) for d in self.get("payment_deduction_loss") if write_off.party == d.party)
 
 						
 						payment_entry.total_allocated_amount = write_off.total_allocated_amount
 						payment_entry.base_total_allocated_amount =write_off.total_allocated_amount_1
 						payment_entry.difference_amount = write_off.difference_amount
-						payment_entry.difference_amount = flt(write_off.difference_amount - total_deductions, write_off.precision("difference_amount"))
+						
+						# payment_entry.difference_amount = flt(write_off.difference_amount - total_deductions, write_off.precision("difference_amount"))
+
 
 
 				if len(self.payment_deduction_loss) > 0:

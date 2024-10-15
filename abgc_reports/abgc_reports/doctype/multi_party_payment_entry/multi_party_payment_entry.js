@@ -62,13 +62,13 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
         } else {
             frm.fields_dict['payment_deduction_loss'].wrapper.style.display = 'none';
         }
-        frm.set_df_property('set_exchange_gainloss', 'hidden', 0)
+        frm.set_df_property('set_exchange_gainloss', 'hidden', 1)
         if (! frm.doc.writeoff === undefined) {
             frm.doc.writeoff.forEach(function(loss){
                 if (loss.difference_amount > 0) {
-                    frm.set_df_property('set_exchange_gainloss', 'hidden', 1)
-                }else{
                     frm.set_df_property('set_exchange_gainloss', 'hidden', 0)
+                }else{
+                    frm.set_df_property('set_exchange_gainloss', 'hidden', 1)
                 }
             })
         }
@@ -196,7 +196,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
         };
     },
     set_exchange_gainloss:function(frm){
-        frm.set_df_property('set_exchange_gainloss', 'hidden', 1)
+        frm.set_df_property('set_exchange_gainloss', 'hidden', 0)
       
         frm.fields_dict['payment_deduction_loss'].wrapper.style.display = 'block'; // Show the table
         frm.refresh_field('payment_deduction_loss'); 
@@ -290,13 +290,18 @@ frappe.ui.form.on('Payment Refrences', {
                 if (frm.doc.party === 'Supplier') {
                     var total_allocated_amount = allocated_amount * source_exchange_rate;
                     var unallocated_amount = (rate.paid_amount  -  total_allocated_amount) / source_exchange_rate;
-                    var  difference_amount = unallocated_amount * source_exchange_rate;
+                  
+                    var base_unallocated_amount = 0
+                    var base_party_amount = flt(total_allocated_amount) + base_unallocated_amount;
+                    var difference_amount =  flt(rate.paid_amount) - base_party_amount ;
                 }
                 else{
                     var total_allocated_amount = allocated_amount * source_exchange_rate;
                     var unallocated_amount = (rate.received_amount - total_allocated_amount) / frm.doc.source_exchange_rate;
-                    var difference_amount = unallocated_amount * source_exchange_rate
-                }
+                    var base_unallocated_amount = 0
+                    var base_party_amount = flt(total_allocated_amount) + base_unallocated_amount;
+                    var difference_amount = base_party_amount - flt(rate.recieve_amount);
+                  }
                 
                 let row = frm.add_child("writeoff");
                 row.currency_paid_from = rate.account_currency_from
