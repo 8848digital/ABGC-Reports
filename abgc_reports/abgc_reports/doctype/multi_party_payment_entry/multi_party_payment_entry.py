@@ -112,7 +112,7 @@ class MultiPartyPaymentEntry(Document):
 
 				payment_entry.save()
 				payment_entry.submit()
-				frappe.db.set_value('Multi Party Entry',{"parent":self.name},{"payment_entry":payment_entry.name})
+				frappe.db.set_value('Multi Party Entry',{"name":value.name},{"payment_entry":payment_entry.name})
 				frappe.db.commit()
 				
 		except Exception as e:
