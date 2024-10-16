@@ -168,18 +168,19 @@ def set_default_party_account(**kwargs):
 
 @frappe.whitelist(allow_guest=True)
 def get_exchange_rate(**kwargs):
-	if kwargs.get('party_type') == 'Customer':
-		if kwargs.get('from_currency') == kwargs.get('to_currency'):
-			return 1
+	if  kwargs.get('from_currency') != None  and kwargs.get('to_currency') != None:
+		if kwargs.get('party_type') == 'Customer':
+			if kwargs.get('from_currency') == kwargs.get('to_currency'):
+				return 1
+			else:
+				exchange_rate=frappe.db.get_all('Currency Exchange',filters={'from_currency': kwargs.get('from_currency'),'to_currency': kwargs.get('to_currency')},fields=['exchange_rate'])
+				return exchange_rate[0].exchange_rate
 		else:
-			exchange_rate=frappe.db.get_all('Currency Exchange',filters={'from_currency': kwargs.get('from_currency'),'to_currency': kwargs.get('to_currency')},fields=['exchange_rate'])
-			return exchange_rate[0].exchange_rate
-	else:
-		if kwargs.get('from_currency') == kwargs.get('to_currency'):
-			return 1
-		else:
-			exchange_rate=frappe.db.get_all('Currency Exchange',filters={'from_currency': kwargs.get('to_currency'),'to_currency': kwargs.get('from_currency')},fields=['exchange_rate'])
-			return exchange_rate[0].exchange_rate
+			if kwargs.get('from_currency') == kwargs.get('to_currency'):
+				return 1
+			else:
+				exchange_rate=frappe.db.get_all('Currency Exchange',filters={'from_currency': kwargs.get('to_currency'),'to_currency': kwargs.get('from_currency')},fields=['exchange_rate'])
+				return exchange_rate[0].exchange_rate
 
 	
 
