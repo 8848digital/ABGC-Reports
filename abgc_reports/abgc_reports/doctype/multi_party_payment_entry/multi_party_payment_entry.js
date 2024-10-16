@@ -382,25 +382,21 @@ frappe.ui.form.on('Multi Party Entry', {
 
     account_currency_from: function(frm, cdn, cdt) {
         var d = locals[cdn][cdt];
-        frappe.db.get_doc('Currency', d.account_currency_from)
-        .then(function(value) {
-            var paidAmountLabel = frm.fields_dict['payment_table'].$wrapper.find("label:contains('Paid amount')");
-            paidAmountLabel.next('.currency-symbol').remove();
-            paidAmountLabel.after(`<label class="currency-symbol">(${value.symbol})</label>`);
-        });
+    
         set_exchange_rate(frm,d)
+        frm.set_currency_labels(["paid_amount"],d.account_currency_from, 'payment_table');
         frm.refresh_field('payment_table');   
     },
     
     account_currency_to: function(frm, cdn, cdt) {
         var d = locals[cdn][cdt];
-        frappe.db.get_doc('Currency', d.account_currency_to)
-        .then(function(value) {
-            var receiveAmountLabel = frm.fields_dict['payment_table'].$wrapper.find("label:contains('Recieve Amount')");
-            receiveAmountLabel.next('.currency-symbol').remove();
-            receiveAmountLabel.after(`<label class="currency-symbol">(${value.symbol})</label>`);
-        });
+
+        if (d.account_currency_from != d.account_currency_to) {
+            frm.set_currency_labels(["recieve_amount"],d.account_currency_to, 'payment_table');
+        }
+        
         set_exchange_rate(frm,d)
+        
         frm.refresh_field('payment_table');   
     },
 
