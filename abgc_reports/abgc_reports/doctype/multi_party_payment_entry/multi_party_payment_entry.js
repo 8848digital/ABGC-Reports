@@ -319,6 +319,12 @@ frappe.ui.form.on('Payment Refrences', {
 })
 
 frappe.ui.form.on('Multi Party Entry', {
+    source_exchange_rate:function(frm,cdn,cdt){
+        var data = locals[cdn][cdt];
+        if (data.paid_amount) {
+            frappe.model.set_value(data.doctype, data.name, "recieve_amount",data.paid_amount *  data.source_exchange_rate);
+        }
+    },
     account_paid_from:function(frm,cdn,cdt){
         var data = locals[cdn][cdt];
         console.log(data.account_paid_from)
