@@ -366,7 +366,7 @@ frappe.ui.form.on('Multi Party Entry', {
     paid_amount:function(frm,cdn,cdt){
         var d = locals[cdn][cdt];
         if (d.account_currency_from == d.account_currency_to) {
-            frappe.model.set_value(d.doctype, d.name, "recieve_amount",d.part_type) 
+            frappe.model.set_value(d.doctype, d.name, "recieve_amount",d.paid_amount) 
         }
 
         if (frm.doc.party == 'Supplier') {
