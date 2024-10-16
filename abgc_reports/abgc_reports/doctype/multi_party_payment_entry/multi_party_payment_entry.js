@@ -328,6 +328,13 @@ frappe.ui.form.on('Multi Party Entry', {
             }
         }
     },
+    before_payment_table_remove:function(frm,cdn,cdt){
+        console.log('isueee')
+        var d = locals[cdn][cdt];
+        table_remove(frm,'payment_entry_refrence',d)
+        table_remove(frm,'writeoff',d)
+        table_remove(frm,'payment_deduction_loss',d)
+    },
 
     part_type:function(frm,cdn,cdt){
         var d = locals[cdn][cdt];
@@ -496,6 +503,20 @@ function set_writeoff(frm,data){
             frm.refresh_field('writeoff');
         }
     });
+}
+
+
+function table_remove(frm,table,d){
+    console.log(table)
+    if (frm.doc[table]) {
+        const childTable = frm.doc[table]; 
+    const rowToDeleteIndex = childTable.findIndex(row => row.party === d.part_type);
+    if (rowToDeleteIndex !== -1) {
+    childTable.splice(rowToDeleteIndex, 1); 
+    frm.refresh_field(`${table}`); 
+    }
+    
+} 
 }
 
 
