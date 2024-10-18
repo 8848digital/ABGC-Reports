@@ -123,7 +123,7 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
             cur_frm.doc.payment_table.forEach(function(party_value){
                     filter_party_list.push(party_value.party)
             })
-            if (frm.doc.party == 'Customer'){
+            if (cur_frm.doc.party == 'Customer'){
                 return {
                     filters: { "customer": ["in", filter_party_list] , 'outstanding_amount':['>' , 0] , 'status':  ['!=', 'Cancelled']}
                 };
