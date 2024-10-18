@@ -8,25 +8,18 @@
  "engine": "InnoDB",
  "field_order": [
   "party_type",
-  "part_type",
+  "party",
   "paid_amount",
-  "recieve_amount",
+  "recieved_amount",
   "account_paid_from",
   "account_paid_to",
   "account_currency_from",
   "account_currency_to",
   "source_exchange_rate",
   "payment_entry",
-  "is_canceld"
+  "is_cancelled"
  ],
  "fields": [
-  {
-   "fieldname": "part_type",
-   "fieldtype": "Dynamic Link",
-   "label": "Party",
-   "options": "party_type",
-   "reqd": 1
-  },
   {
    "fieldname": "paid_amount",
    "fieldtype": "Currency",
@@ -38,7 +31,8 @@
   {
    "fieldname": "source_exchange_rate",
    "fieldtype": "Float",
-   "label": "Source Exchange Rate"
+   "label": "Source Exchange Rate",
+   "precision": "4"
   },
   {
    "fieldname": "account_paid_from",
@@ -76,32 +70,40 @@
    "options": "DocType"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "payment_entry",
    "fieldtype": "Data",
    "label": "Payment Entry",
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
+   "default": "0",
+   "fieldname": "is_cancelled",
+   "fieldtype": "Check",
+   "label": "Is Cancelled",
+   "read_only": 1
+  },
+  {
+   "fieldname": "party",
+   "fieldtype": "Dynamic Link",
+   "label": "Party",
+   "options": "party_type",
+   "reqd": 1
+  },
+  {
    "depends_on": "eval:(doc.account_currency_from != doc.account_currency_to)",
-   "fieldname": "recieve_amount",
+   "fieldname": "recieved_amount",
    "fieldtype": "Currency",
    "label": "Recieved Amount",
    "options": "account_currency_to",
    "reqd": 1
-  },
-  {
-   "allow_on_submit": 1,
-   "default": "0",
-   "fieldname": "is_canceld",
-   "fieldtype": "Check",
-   "label": "Is Cancelled",
-   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-15 17:46:36.476827",
+ "modified": "2024-10-18 15:43:52.240127",
  "modified_by": "Administrator",
  "module": "Abgc Reports",
  "name": "Multi Party Entry",
