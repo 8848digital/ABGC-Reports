@@ -25,9 +25,9 @@
   "set_exchange_gainloss",
   "payment_deduction_loss",
   "section_break_sj5nw",
-  "cheque__refrence_no",
+  "cheque_reference_no",
   "column_break_fypl7",
-  "cheque__refrence_date"
+  "cheque_reference_date"
  ],
  "fields": [
   {
@@ -35,7 +35,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Payment Type",
-   "options": "Recieve\nPay\nInternal Transfer",
+   "options": "Receive\nPay\nInternal Transfer",
    "reqd": 1
   },
   {
@@ -86,19 +86,7 @@
    "fieldname": "payment_entry_refrence",
    "fieldtype": "Table",
    "label": "Payment Entry Refrence",
-   "options": "Payment Refrences"
-  },
-  {
-   "fieldname": "cheque__refrence_no",
-   "fieldtype": "Data",
-   "label": "Cheque / Refrence No",
-   "reqd": 1
-  },
-  {
-   "fieldname": "cheque__refrence_date",
-   "fieldtype": "Date",
-   "label": "Cheque / Refrence Date",
-   "reqd": 1
+   "options": "Payment References"
   },
   {
    "fieldname": "party",
@@ -127,7 +115,7 @@
    "fieldname": "writeoff",
    "fieldtype": "Table",
    "label": "WriteOff",
-   "options": "Writoff"
+   "options": "Writeoff"
   },
   {
    "fieldname": "mode_of_payment",
@@ -145,12 +133,24 @@
    "fieldtype": "Table",
    "label": "Payment Deduction Loss",
    "options": "Payment Deduction Loss"
+  },
+  {
+   "fieldname": "cheque_reference_no",
+   "fieldtype": "Data",
+   "label": "Cheque / Reference No",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cheque_reference_date",
+   "fieldtype": "Date",
+   "label": "Cheque / Reference Date",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-13 11:13:17.993284",
+ "modified": "2024-10-18 15:52:50.299124",
  "modified_by": "Administrator",
  "module": "Abgc Reports",
  "name": "Multi-Party Payment Entry",
