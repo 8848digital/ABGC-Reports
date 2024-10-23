@@ -196,6 +196,7 @@ frappe.ui.form.on('Multi Party Entry', {
         var party_row = locals[cdn][cdt];
         if (party_row.paid_amount) {
             frappe.model.set_value(party_row.doctype, party_row.name, "recieved_amount", party_row.paid_amount *  party_row.source_exchange_rate);
+            frappe.model.set_value(party_row.doctype, party_row.name, "base_paid_amount", party_row.paid_amount *  party_row.source_exchange_rate);
         }
     },
     account_paid_from:function(frm,cdn,cdt){
@@ -278,6 +279,12 @@ frappe.ui.form.on('Multi Party Entry', {
     },
 
     paid_amount:function(frm,cdn,cdt){
+        frm.set_value('payment_entry_refrence', []);
+        frm.refresh_field('payment_entry_refrence');
+        frm.set_value('writeoff', []);
+        frm.refresh_field('writeoff');
+        frm.set_value('payment_deduction_loss', []);
+        frm.refresh_field('payment_deduction_loss');
         var party_row = locals[cdn][cdt];
         if (party_row.account_currency_from == party_row.account_currency_to) {
             frappe.model.set_value(party_row.doctype, party_row.name, "recieved_amount",party_row.paid_amount) 
@@ -358,6 +365,7 @@ function set_exchange_rate(frm,party_row){
             },
             callback:function(data){
                 frappe.model.set_value(party_row.doctype, party_row.name, "source_exchange_rate",data.message)
+                frappe.model.set_value(party_row.doctype, party_row.name, "base_paid_amount", party_row.paid_amount *  party_row.source_exchange_rate);
             }
         }
     )
@@ -473,18 +481,38 @@ function  get_exchange_gain_loss_account(frm,cdn,cdt){
     }
     frm.doc.payment_table.forEach(function(rate) {
         if (invoice_row.party === rate.party) {
+            console.log(rate)
             if (party_list.includes(invoice_row.party)) {
                 remove_row_by_field_value(frm, 'writeoff', 'party', invoice_row.party);
             }
             var source_exchange_rate = parseFloat(rate.source_exchange_rate);
+            // var paid_amount = rate.paid_amount * source_exchange_rate
+
             if (frm.doc.party === 'Supplier') {
                 var total_allocated_amount = allocated_amount * source_exchange_rate;
-                var base_unallocated_amount = 0
+                if (rate.account_currency_from !== rate.account_currency_to){
+                    var base_unallocated_amount = (rate.recieved_amount - total_allocated_amount)/source_exchange_rate
+                    console.log(base_unallocated_amount)
+                }
+                else if(total_allocated_amount < rate.paid_amount ){
+                    var base_unallocated_amount = rate.paid_amount - total_allocated_amount
+                }
+                else{
+                    var base_unallocated_amount = 0
+                }
                 var base_party_amount = flt(total_allocated_amount) + base_unallocated_amount;
                 var difference_amount =  flt(rate.paid_amount) - base_party_amount ;
             }else{
                 var total_allocated_amount = allocated_amount * source_exchange_rate;
-                var base_unallocated_amount = 0
+                if (rate.account_currency_from !== rate.account_currency_to){
+                    var base_unallocated_amount = (rate.recieved_amount - total_allocated_amount)/source_exchange_rate
+                }
+                else if (total_allocated_amount < rate.paid_amount ){
+                    var base_unallocated_amount = rate.paid_amount - total_allocated_amount
+                }
+                else{
+                    var base_unallocated_amount = 0
+                }
                 var base_party_amount = flt(total_allocated_amount) + base_unallocated_amount;  
                 var difference_amount = base_party_amount - flt(rate.recieved_amount);
             }
@@ -494,14 +522,9 @@ function  get_exchange_gain_loss_account(frm,cdn,cdt){
             row.total_allocated_amount = allocated_amount;
             row.total_allocated_amount_1 = total_allocated_amount; 
             row.difference_amount = difference_amount;  
+            row.unallocated_amount = base_unallocated_amount
             row.party = invoice_row.party;
             frm.refresh_field('writeoff');
         }
     });
 }
-
-
-
-// function set_exchange_on_delete(frm){
-
-// }

@@ -4,6 +4,7 @@
 # cheque__refrence_date
 import frappe
 import time
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
 
@@ -37,10 +38,8 @@ class MultiPartyPaymentEntry(Document):
 					'paid_from_account_currency' :  value.account_currency_from,
 					'paid_to_account_currency' : value.account_currency_to,
 					'source_exchange_rate' : value.source_exchange_rate,
-					'target_exchange_rate' : value.source_exchange_rate,
 					'payment_type':self.payment_type,
-					'base_received_amount':  value.source_exchange_rate * value.recieved_amount,
-					'base_paid_amount': base_paid_amount,
+					'base_paid_amount': value.base_paid_amount,
 					'mode_of_payment': mode_of_payment
 				})
 				
@@ -85,6 +84,13 @@ class MultiPartyPaymentEntry(Document):
 			for refrence in self.payment_entry_refrence:
 				if refrence.allocated_amount > refrence.outstanding:
 					frappe.throw('The allocated amount must not be greater than the outstanding amount' )
+	
+	def before_cancel(self):
+		for entry in self.payment_table:
+			if not entry.is_cancelled:
+				payment_link = frappe.utils.get_link_to_form('Payment Entry', entry.payment_entry)
+				frappe.throw(_('In row {0}. The party {1} is linked with Payment Entry {2}').format(entry.idx, entry.party, payment_link))
+
 					
 @frappe.whitelist()
 def get_company_account(**kwargs):
