@@ -35,6 +35,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Payment Type",
+   "no_copy": 1,
    "options": "Receive\nPay\nInternal Transfer",
    "reqd": 1
   },
@@ -50,6 +51,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Company",
+   "no_copy": 1,
    "options": "Company",
    "reqd": 1
   },
@@ -68,6 +70,7 @@
    "fieldtype": "Date",
    "in_list_view": 1,
    "label": "Posting Date",
+   "no_copy": 1,
    "reqd": 1
   },
   {
@@ -92,6 +95,7 @@
    "fieldname": "party",
    "fieldtype": "Link",
    "label": "Party Type",
+   "no_copy": 1,
    "options": "DocType",
    "reqd": 1
   },
@@ -121,6 +125,7 @@
    "fieldname": "mode_of_payment",
    "fieldtype": "Link",
    "label": "Mode of Payment",
+   "no_copy": 1,
    "options": "Mode of Payment"
   },
   {
@@ -138,19 +143,21 @@
    "fieldname": "cheque_reference_no",
    "fieldtype": "Data",
    "label": "Cheque / Reference No",
+   "no_copy": 1,
    "reqd": 1
   },
   {
    "fieldname": "cheque_reference_date",
    "fieldtype": "Date",
    "label": "Cheque / Reference Date",
+   "no_copy": 1,
    "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2024-10-18 15:52:50.299124",
+ "modified": "2024-10-24 17:58:14.076890",
  "modified_by": "Administrator",
  "module": "Abgc Reports",
  "name": "Multi-Party Payment Entry",

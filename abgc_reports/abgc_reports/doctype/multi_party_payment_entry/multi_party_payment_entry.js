@@ -7,6 +7,9 @@ var party_list = [];
 frappe.ui.form.on('Multi-Party Payment Entry', {
     onload:function(frm){
         set_party(frm)
+        if (frm.is_new() && !frm.doc.amended_from) {
+            clear_table(frm)
+        }
     },
     party:function(frm){
         set_party(frm)
