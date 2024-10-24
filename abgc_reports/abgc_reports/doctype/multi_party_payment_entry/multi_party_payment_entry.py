@@ -74,6 +74,8 @@ class MultiPartyPaymentEntry(Document):
 				payment_entry.save()
 				payment_entry.submit()
 				frappe.db.set_value('Multi Party Entry',{"name":value.name},{"payment_entry":payment_entry.name})
+				frappe.db.set_value('Multi Party Entry',{"name":value.name},{"is_cancelled":0})
+
 				
 		except Exception as e:  
 			frappe.msgprint("Error: {0}".format(e))
