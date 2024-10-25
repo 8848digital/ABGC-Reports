@@ -500,9 +500,8 @@ function  get_exchange_gain_loss_account(frm,cdn,cdt){
                 }
                 else if (total_allocated_amount < rate.paid_amount ){
                     var base_unallocated_amount = rate.paid_amount - total_allocated_amount
-                    
+                            
                 }
-                console.log(base_unallocated_amount,'unallocated_amount11')
             }
             if (frm.doc.party === 'Supplier') {
                 var main_base_unallocated = base_unallocated_amount * source_exchange_rate
