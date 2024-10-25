@@ -491,11 +491,12 @@ function  get_exchange_gain_loss_account(frm,cdn,cdt){
             var source_exchange_rate = parseFloat(rate.source_exchange_rate);
             var total_allocated_amount = allocated_amount * source_exchange_rate;
             var base_unallocated_amount = 0
-            if (frm.doc.party === 'Supplier' && total_allocated_amount < rate.paid_amount && allocated_amount < rate.received_amount + (0 / source_exchange_rate) ) {
+            console.log(total_allocated_amount,allocated_amount,'validate',rate.received_amount,'recieved')
+            if (frm.doc.payment_type == "Pay" && total_allocated_amount < rate.paid_amount && allocated_amount < rate.recieved_amount ) {
                 var base_unallocated_amount = (rate.paid_amount - total_allocated_amount) / source_exchange_rate
             }
-            else if(frm.doc.party === 'Customer' && total_allocated_amount < rate.received_amount  && allocated_amount < rate.paid_amount + ( 0 / frm.doc.source_exchange_rate)){
-                var base_unallocated_amount = (rate.received_amount - total_allocated_amount) / source_exchange_rate
+            else if(frm.doc.payment_type == "Receive" && total_allocated_amount < rate.recieved_amount + 0 && allocated_amount < rate.paid_amount){
+                var base_unallocated_amount = (rate.recieved_amount + 0 - 0 - total_allocated_amount) /source_exchange_rate ;
             }
             if (frm.doc.party === 'Supplier') {
                 var main_base_unallocated = base_unallocated_amount * source_exchange_rate
@@ -505,8 +506,7 @@ function  get_exchange_gain_loss_account(frm,cdn,cdt){
                 var main_base_unallocated = base_unallocated_amount * source_exchange_rate
                 var base_party_amount = flt(total_allocated_amount) + main_base_unallocated;
                 var difference_amount = base_party_amount - flt(rate.recieved_amount) ;
-                console.log(base_unallocated_amount,'unallocated_amount22')
-                console.log(difference_amount,'diffrence_amount')
+                console.log(base_party_amount,'base')
             }
             let row = frm.add_child("writeoff");
             if (frm.doc.party == 'Supplier') {
