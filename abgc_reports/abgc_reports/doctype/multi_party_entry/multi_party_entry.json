@@ -17,7 +17,8 @@
   "account_currency_to",
   "source_exchange_rate",
   "payment_entry",
-  "is_cancelled"
+  "is_cancelled",
+  "base_paid_amount"
  ],
  "fields": [
   {
@@ -101,12 +102,18 @@
    "label": "Recieved Amount",
    "options": "account_currency_to",
    "reqd": 1
+  },
+  {
+   "fieldname": "base_paid_amount",
+   "fieldtype": "Float",
+   "hidden": 1,
+   "label": "Base Paid"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-25 12:16:59.994783",
+ "modified": "2024-10-25 12:32:30.360672",
  "modified_by": "Administrator",
  "module": "Abgc Reports",
  "name": "Multi Party Entry",
