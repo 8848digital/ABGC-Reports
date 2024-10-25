@@ -491,17 +491,11 @@ function  get_exchange_gain_loss_account(frm,cdn,cdt){
             var source_exchange_rate = parseFloat(rate.source_exchange_rate);
             var total_allocated_amount = allocated_amount * source_exchange_rate;
             var base_unallocated_amount = 0
-            if (frm.doc.party === 'Supplier' && total_allocated_amount < rate.paid_amount - 0 && allocated_amount < rate.received_amount + (0 / source_exchange_rate) ) {
+            if (frm.doc.party === 'Supplier' && total_allocated_amount < rate.paid_amount && allocated_amount < rate.received_amount + (0 / source_exchange_rate) ) {
                 var base_unallocated_amount = (rate.paid_amount - total_allocated_amount) / source_exchange_rate
             }
-            else if(frm.doc.party === 'Customer'){
-                if (rate.account_currency_from !== rate.account_currency_to){
-                    var base_unallocated_amount = (rate.recieved_amount - total_allocated_amount)/source_exchange_rate
-                }
-                else if (total_allocated_amount < rate.paid_amount ){
-                    var base_unallocated_amount = rate.paid_amount - total_allocated_amount
-                            
-                }
+            else if(frm.doc.party === 'Customer' && total_allocated_amount < rate.received_amount  && allocated_amount < rate.paid_amount + ( 0 / frm.doc.source_exchange_rate)){
+                var base_unallocated_amount = (rate.received_amount - total_allocated_amount) / source_exchange_rate
             }
             if (frm.doc.party === 'Supplier') {
                 var main_base_unallocated = base_unallocated_amount * source_exchange_rate
