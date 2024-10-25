@@ -489,32 +489,41 @@ function  get_exchange_gain_loss_account(frm,cdn,cdt){
                 remove_row_by_field_value(frm, 'writeoff', 'party', invoice_row.party);
             }
             var source_exchange_rate = parseFloat(rate.source_exchange_rate);
-            // var paid_amount = rate.paid_amount * source_exchange_rate
-
-            if (frm.doc.party === 'Supplier') {
-                var total_allocated_amount = allocated_amount * source_exchange_rate;
+            var total_allocated_amount = allocated_amount * source_exchange_rate;
+            var base_unallocated_amount = 0
+            if (frm.doc.party === 'Supplier' && total_allocated_amount < rate.paid_amount - 0 && allocated_amount < rate.received_amount + (0 / source_exchange_rate) ) {
                 var base_unallocated_amount = (rate.paid_amount - total_allocated_amount) / source_exchange_rate
-                var main_base_unallocated = base_unallocated_amount * source_exchange_rate
-                var base_party_amount = flt(total_allocated_amount) + main_base_unallocated;
-                var difference_amount =  flt(rate.paid_amount) - base_party_amount ;
-            }else{
-                var total_allocated_amount = allocated_amount * source_exchange_rate;
+            }
+            else if(frm.doc.party === 'Customer'){
                 if (rate.account_currency_from !== rate.account_currency_to){
                     var base_unallocated_amount = (rate.recieved_amount - total_allocated_amount)/source_exchange_rate
                 }
                 else if (total_allocated_amount < rate.paid_amount ){
                     var base_unallocated_amount = rate.paid_amount - total_allocated_amount
+                    
                 }
-                else{
-                    var base_unallocated_amount = 0
-                }
+                console.log(base_unallocated_amount,'unallocated_amount11')
+            }
+            if (frm.doc.party === 'Supplier') {
+                var main_base_unallocated = base_unallocated_amount * source_exchange_rate
+                var base_party_amount = flt(total_allocated_amount) + main_base_unallocated;
+                var difference_amount =  flt(rate.paid_amount) - base_party_amount ;
+            }else{
                 var main_base_unallocated = base_unallocated_amount * source_exchange_rate
                 var base_party_amount = flt(total_allocated_amount) + main_base_unallocated;
                 var difference_amount = base_party_amount - flt(rate.recieved_amount) ;
+                console.log(base_unallocated_amount,'unallocated_amount22')
+                console.log(difference_amount,'diffrence_amount')
             }
             let row = frm.add_child("writeoff");
-            row.currency_paid_from = rate.account_currency_from
-            row.currency_paid_to = rate.account_currency_to
+            if (frm.doc.party == 'Supplier') {
+                console.log(rate.account_currency_to ,rate.account_currency_from)
+                row.currency_paid_from = rate.account_currency_to 
+                row.currency_paid_to = rate.account_currency_from
+            }else{
+                row.currency_paid_from = rate.account_currency_from
+                row.currency_paid_to = rate.account_currency_to
+            }
             row.total_allocated_amount = allocated_amount;
             row.total_allocated_amount_1 = total_allocated_amount; 
             row.difference_amount = difference_amount;  
