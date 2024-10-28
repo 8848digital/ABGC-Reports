@@ -7,9 +7,17 @@ var party_list = [];
 frappe.ui.form.on('Multi-Party Payment Entry', {
     onload:function(frm){
         set_party(frm)
-        if (frm.is_new() && !frm.doc.amended_from) {
-            clear_table(frm)
+        if (frm.is_new() && frm.doc.amended_from) {
+            clear_tables_on_duplicate_and_ammend(frm)
         }
+        if (frm.is_new()) {
+            clear_tables_on_duplicate_and_ammend(frm)
+        }
+
+        frm.doc.payment_table.forEach(function(label){
+            frm.set_currency_labels(["paid_amount"],label.account_currency_from, 'payment_table');
+            frm.set_currency_labels(["recieved_amount"],label.account_currency_to, 'payment_table');
+        })
     },
     party:function(frm){
         set_party(frm)
@@ -149,7 +157,6 @@ frappe.ui.form.on('Multi-Party Payment Entry', {
 frappe.ui.form.on('Payment References', {
     reference_name:function(frm,cdn,cdt){
         var payment_reference=locals[cdn][cdt]
-        console.log(payment_reference.reference_name)
         if (frm.doc.party === 'Customer'){
             var reference_details = frappe.db.get_value(payment_reference.reference_doctype, 
                 {'name': payment_reference.reference_name}, 
@@ -305,7 +312,7 @@ frappe.ui.form.on('Multi Party Entry', {
 
     account_currency_from: function(frm, cdn, cdt) {
         var party_row = locals[cdn][cdt];
-        frm.set_currency_labels(["paid_amount"],party_row.account_currency_from, 'payment_table');
+        frm.set_currency_labels(["paid_amount"],party_row.account_currency_from);
         set_exchange_rate(frm,party_row)
         frm.refresh_field('payment_table'); 
     },
@@ -313,7 +320,7 @@ frappe.ui.form.on('Multi Party Entry', {
     account_currency_to: function(frm, cdn, cdt) {
         var party_row = locals[cdn][cdt];
         if (party_row.account_currency_from != party_row.account_currency_to) {
-            frm.set_currency_labels(["recieved_amount"],party_row.account_currency_to, 'payment_table');
+            frm.set_currency_labels(["recieved_amount"],party_row.account_currency_to);
         }
         set_exchange_rate(frm,party_row)
         frm.refresh_field('payment_table');   
@@ -484,14 +491,12 @@ function  get_exchange_gain_loss_account(frm,cdn,cdt){
     }
     frm.doc.payment_table.forEach(function(rate) {
         if (invoice_row.party === rate.party) {
-            console.log(rate)
             if (party_list.includes(invoice_row.party)) {
                 remove_row_by_field_value(frm, 'writeoff', 'party', invoice_row.party);
             }
             var source_exchange_rate = parseFloat(rate.source_exchange_rate);
             var total_allocated_amount = allocated_amount * source_exchange_rate;
             var base_unallocated_amount = 0
-            console.log(total_allocated_amount,allocated_amount,'validate',rate.received_amount,'recieved')
             if (frm.doc.payment_type == "Pay" && total_allocated_amount < rate.paid_amount && allocated_amount < rate.recieved_amount ) {
                 var base_unallocated_amount = (rate.paid_amount - total_allocated_amount) / source_exchange_rate
             }
@@ -506,11 +511,9 @@ function  get_exchange_gain_loss_account(frm,cdn,cdt){
                 var main_base_unallocated = base_unallocated_amount * source_exchange_rate
                 var base_party_amount = flt(total_allocated_amount) + main_base_unallocated;
                 var difference_amount = base_party_amount - flt(rate.recieved_amount) ;
-                console.log(base_party_amount,'base')
             }
             let row = frm.add_child("writeoff");
             if (frm.doc.party == 'Supplier') {
-                console.log(rate.account_currency_to ,rate.account_currency_from)
                 row.currency_paid_from = rate.account_currency_to 
                 row.currency_paid_to = rate.account_currency_from
             }else{
@@ -525,4 +528,13 @@ function  get_exchange_gain_loss_account(frm,cdn,cdt){
             frm.refresh_field('writeoff');
         }
     });
+}
+
+function clear_tables_on_duplicate_and_ammend(frm){
+    frm.set_value('payment_entry_refrence', []);
+    frm.refresh_field('payment_entry_refrence');
+    frm.set_value('writeoff', []);
+    frm.refresh_field('writeoff');
+    frm.set_value('payment_deduction_loss', []);
+    frm.refresh_field('payment_deduction_loss');
 }
