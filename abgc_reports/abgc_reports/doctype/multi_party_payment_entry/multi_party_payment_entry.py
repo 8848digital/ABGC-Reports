@@ -86,7 +86,12 @@ class MultiPartyPaymentEntry(Document):
 			for refrence in self.payment_entry_refrence:
 				if refrence.allocated_amount > refrence.outstanding:
 					frappe.throw('The allocated amount must not be greater than the outstanding amount' )
-	
+
+			if self.amended_from:
+				for checkbox in self.payment_table:
+					checkbox.is_cancelled = 0
+					checkbox.payment_entry = None
+		
 	def before_cancel(self):
 		for entry in self.payment_table:
 			if not entry.is_cancelled:

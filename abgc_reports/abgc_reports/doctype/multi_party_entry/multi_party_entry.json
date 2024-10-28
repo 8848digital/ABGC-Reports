@@ -68,7 +68,6 @@
    "fieldtype": "Link",
    "hidden": 1,
    "label": "Party Type",
-   "no_copy": 1,
    "options": "DocType"
   },
   {
@@ -85,13 +84,13 @@
    "fieldname": "is_cancelled",
    "fieldtype": "Check",
    "label": "Is Cancelled",
+   "no_copy": 1,
    "read_only": 1
   },
   {
    "fieldname": "party",
    "fieldtype": "Dynamic Link",
    "label": "Party",
-   "no_copy": 1,
    "options": "party_type",
    "reqd": 1
   },
@@ -113,7 +112,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-25 12:32:30.360672",
+ "modified": "2024-10-28 11:30:41.174279",
  "modified_by": "Administrator",
  "module": "Abgc Reports",
  "name": "Multi Party Entry",
